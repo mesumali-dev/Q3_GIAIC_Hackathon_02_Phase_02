@@ -208,3 +208,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Active Technologies
+- Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, SQLModel, uvicorn (backend); Next.js 16+, Better Auth (frontend) (001-foundation-init)
+- Neon PostgreSQL (placeholder connection only - no schema) (001-foundation-init)
+
+## Recent Changes
+- 001-foundation-init: Added Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, SQLModel, uvicorn (backend); Next.js 16+, Better Auth (frontend)
