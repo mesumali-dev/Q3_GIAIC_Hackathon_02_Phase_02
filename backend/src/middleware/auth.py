@@ -1,110 +1,154 @@
 """
-JWT Authentication middleware placeholder for the backend application.
+JWT Authentication middleware for the backend application.
 
-This module will contain JWT verification logic when implemented.
-Currently serves as a placeholder for the foundation phase.
+This module provides JWT verification for all authenticated endpoints.
+Uses PyJWT with HS256 algorithm and BETTER_AUTH_SECRET for verification.
 
 Security Notes:
-- JWT signatures MUST be verified using BETTER_AUTH_SECRET
-- JWT expiry MUST be enforced
-- User ID from JWT MUST match route parameter user_id
+- JWT signatures are verified using BETTER_AUTH_SECRET
+- JWT expiry is enforced
+- User ID from JWT is extracted for ownership verification
+
+@see US4: Backend JWT Verification
 """
 
-from typing import Optional
-from fastapi import Request, HTTPException, status
+from typing import Annotated
+
+import jwt
+from fastapi import Depends, HTTPException, Header, status
 
 from src.config import get_settings
 
 
-async def verify_jwt_token(token: str) -> Optional[dict]:
+def verify_jwt(
+    authorization: Annotated[str | None, Header()] = None
+) -> dict:
     """
-    Placeholder JWT token verification.
+    Verify JWT token from Authorization header.
 
-    This will be implemented in Phase 2+ when authentication is added.
+    Extracts and validates the JWT token, returning the decoded payload.
 
     Args:
-        token: The JWT token from the Authorization header
+        authorization: The Authorization header value (e.g., "Bearer <token>")
 
     Returns:
-        Decoded JWT payload if valid, None otherwise
+        Decoded JWT payload containing user information
 
     Raises:
-        HTTPException: 401 if token is invalid or expired
+        HTTPException: 401 if token is missing, expired, or invalid
     """
-    # Placeholder: No actual JWT verification in foundation phase
-    # Future implementation will use PyJWT:
-    #
-    # import jwt
-    # settings = get_settings()
-    # try:
-    #     payload = jwt.decode(
-    #         token,
-    #         settings.BETTER_AUTH_SECRET,
-    #         algorithms=[settings.JWT_ALGORITHM]
-    #     )
-    #     return payload
-    # except jwt.ExpiredSignatureError:
-    #     raise HTTPException(status_code=401, detail="Token has expired")
-    # except jwt.InvalidTokenError:
-    #     raise HTTPException(status_code=401, detail="Invalid token")
+    settings = get_settings()
 
-    return None
+    # Check for missing Authorization header
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing Authorization header",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Check for correct Bearer format
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Authorization header format. Use 'Bearer <token>'",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Extract token from header
+    token = authorization[7:]  # Remove "Bearer " prefix
+
+    # Check for empty token
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing token in Authorization header",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    try:
+        # Verify and decode the JWT token
+        payload = jwt.decode(
+            token,
+            settings.BETTER_AUTH_SECRET,
+            algorithms=[settings.JWT_ALGORITHM],
+        )
+        return payload
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    except jwt.InvalidSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token signature",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    except jwt.InvalidTokenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
-async def get_current_user(request: Request) -> Optional[dict]:
+def get_current_user(payload: Annotated[dict, Depends(verify_jwt)]) -> dict:
     """
-    Placeholder for extracting current user from request.
+    Get current user information from verified JWT payload.
 
-    This will be implemented in Phase 2+ when authentication is added.
+    This is a FastAPI dependency that extracts user info from the JWT.
 
     Args:
-        request: The FastAPI request object
+        payload: Decoded JWT payload from verify_jwt dependency
 
     Returns:
-        User information dict if authenticated, None otherwise
+        User information dict with user_id and email
 
     Raises:
-        HTTPException: 401 if not authenticated
+        HTTPException: 401 if user_id (sub claim) is missing
     """
-    # Placeholder: No authentication in foundation phase
-    # Future implementation:
-    #
-    # auth_header = request.headers.get("Authorization")
-    # if not auth_header or not auth_header.startswith("Bearer "):
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Missing or invalid Authorization header"
-    #     )
-    # token = auth_header.split(" ")[1]
-    # return await verify_jwt_token(token)
+    user_id = payload.get("sub")
+    email = payload.get("email")
 
-    return None
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token: missing user identifier",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return {
+        "user_id": user_id,
+        "email": email,
+    }
 
 
 def verify_user_ownership(jwt_user_id: str, route_user_id: str) -> bool:
     """
-    Placeholder for verifying user ownership of resources.
-
-    This will be implemented in Phase 2+ when authentication is added.
+    Verify that the authenticated user owns the requested resource.
 
     Args:
-        jwt_user_id: User ID extracted from JWT token
+        jwt_user_id: User ID extracted from JWT token (sub claim)
         route_user_id: User ID from the route parameter
 
     Returns:
-        True if user IDs match, False otherwise
+        True if user IDs match
 
     Raises:
         HTTPException: 403 if user IDs don't match
     """
-    # Placeholder: No ownership verification in foundation phase
-    # Future implementation:
-    #
-    # if jwt_user_id != route_user_id:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_403_FORBIDDEN,
-    #         detail="Access denied: Cannot access another user's resources"
-    #     )
-    # return True
-
+    if jwt_user_id != route_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: Cannot access another user's resources",
+        )
     return True
+
+
+# Type alias for dependency injection
+CurrentUser = Annotated[dict, Depends(get_current_user)]
