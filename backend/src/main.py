@@ -53,15 +53,21 @@ app = FastAPI(
 )
 
 # Configure CORS for frontend communication
+# Uses FRONTEND_URL from environment for production flexibility
+cors_origins = [
+    settings.FRONTEND_URL,
+    "http://localhost:3000",  # Next.js development server fallback
+    "http://127.0.0.1:3000",
+]
+# Remove duplicates while preserving order
+cors_origins = list(dict.fromkeys(cors_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js development server
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "*"],  # Explicit Authorization header
 )
 
 
@@ -98,6 +104,10 @@ async def root():
         "health": "/health"
     }
 
+
+# Register auth routes
+from src.api.auth import router as auth_router
+app.include_router(auth_router)
 
 # Future: Task routes will be added in Phase 3+
 # from src.api.tasks import router as tasks_router

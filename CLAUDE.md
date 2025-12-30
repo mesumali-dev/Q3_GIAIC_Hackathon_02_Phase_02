@@ -212,6 +212,9 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 ## Active Technologies
 - Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, SQLModel, uvicorn (backend); Next.js 16+, Better Auth (frontend) (001-foundation-init)
 - Neon PostgreSQL (placeholder connection only - no schema) (001-foundation-init)
+- Python 3.14+ (backend), TypeScript 5.x (frontend) + FastAPI, PyJWT, SQLModel (backend); Next.js 16+, Better Auth, Tailwind CSS (frontend) (002-jwt-auth)
+- Neon PostgreSQL (user data via Better Auth, session data) (002-jwt-auth)
+- Neon PostgreSQL via SQLModel ORM (003-backend-auth-refactor)
 
 ## Recent Changes
 - 001-foundation-init: Added Python 3.11+ (backend), TypeScript 5.x (frontend) + FastAPI, SQLModel, uvicorn (backend); Next.js 16+, Better Auth (frontend)

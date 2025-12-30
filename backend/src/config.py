@@ -35,6 +35,9 @@ class Settings:
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRY_HOURS: int = int(os.getenv("JWT_EXPIRY_HOURS", "24"))
 
+    # CORS Configuration
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
     def validate(self) -> list[str]:
         """
         Validate that required environment variables are set.
