@@ -3,17 +3,46 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signOut, useSession } from "@/lib/auth-client";
+import { logout, verifyAuth } from "@/lib/api";
+import { getStoredUser, isAuthenticated, StoredUser } from "@/lib/auth-helper";
 
 export default function Home() {
   const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const [user, setUser] = useState<StoredUser | null>(null);
+  const [isPending, setIsPending] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      // First check localStorage
+      const storedUser = getStoredUser();
+      if (!storedUser || !isAuthenticated()) {
+        setUser(null);
+        setIsPending(false);
+        return;
+      }
+
+      // Verify with backend
+      const result = await verifyAuth();
+      if (result.data?.authenticated) {
+        setUser(storedUser);
+      } else {
+        // Token invalid, clear auth
+        logout();
+        setUser(null);
+      }
+      setIsPending(false);
+    };
+
+    checkAuth();
+  }, []);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
-      await signOut();
+      logout();
+      setUser(null);
       router.push("/login");
       router.refresh();
     } catch (error) {
@@ -64,14 +93,14 @@ export default function Home() {
               </svg>
               <span className="text-zinc-500">Checking authentication...</span>
             </div>
-          ) : session?.user ? (
+          ) : user ? (
             <>
               <h2 className="text-sm font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">
                 Authenticated
               </h2>
               <div className="flex flex-col items-center gap-2">
                 <p className="text-zinc-700 dark:text-zinc-300">
-                  Welcome, <span className="font-medium">{session.user.email}</span>
+                  Welcome, <span className="font-medium">{user.email}</span>
                 </p>
                 <button
                   onClick={handleSignOut}
@@ -113,14 +142,14 @@ export default function Home() {
         {/* Status Section */}
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            Phase 2: Authentication
+            Phase 3: Backend Auth Refactor
           </h2>
           <div className="flex flex-col gap-2 text-left text-sm">
             <div className="flex items-center gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
                 ✓
               </span>
-              <span className="text-zinc-700 dark:text-zinc-300">Better Auth configured</span>
+              <span className="text-zinc-700 dark:text-zinc-300">FastAPI backend auth</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
@@ -132,13 +161,13 @@ export default function Home() {
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
                 ✓
               </span>
-              <span className="text-zinc-700 dark:text-zinc-300">Route protection</span>
+              <span className="text-zinc-700 dark:text-zinc-300">SQLModel user model</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
                 ✓
               </span>
-              <span className="text-zinc-700 dark:text-zinc-300">Backend JWT verification</span>
+              <span className="text-zinc-700 dark:text-zinc-300">localStorage token storage</span>
             </div>
           </div>
         </div>
@@ -155,10 +184,10 @@ export default function Home() {
             Tailwind CSS
           </span>
           <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-            Better Auth
+            FastAPI
           </span>
           <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-            FastAPI
+            SQLModel
           </span>
           <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
             PyJWT
@@ -167,7 +196,7 @@ export default function Home() {
 
         {/* Footer */}
         <p className="text-xs text-zinc-400 dark:text-zinc-600">
-          Phase 2: JWT Authentication & Frontend UI
+          Phase 3: Backend Authentication Refactor
         </p>
       </main>
     </div>

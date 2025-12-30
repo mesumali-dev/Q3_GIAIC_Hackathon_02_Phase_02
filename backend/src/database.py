@@ -1,61 +1,75 @@
 """
-Database connection placeholder for the backend application.
+Database connection module for the backend application.
 
-This module will contain the database connection logic when implemented.
-Currently serves as a placeholder for the foundation phase.
+Provides SQLModel database connection, session management, and table creation.
+Uses Neon PostgreSQL as the database backend.
 
-Future implementation will use:
-- SQLModel for ORM
-- Neon PostgreSQL as the database
-- Async database sessions
+@see data-model.md for schema specifications
 """
 
-from typing import Generator, Any
+from typing import Generator
+
+from sqlmodel import Session, SQLModel, create_engine
 
 from src.config import get_settings
 
-# Placeholder: Database URL from settings
-DATABASE_URL = get_settings().DATABASE_URL
+# Get database URL from settings
+settings = get_settings()
+
+# Create engine with connection pool settings suitable for serverless
+engine = create_engine(
+    settings.DATABASE_URL,
+    echo=settings.DEBUG,  # Log SQL queries in debug mode
+    pool_pre_ping=True,  # Verify connections before use
+)
 
 
-# Placeholder: Engine creation (to be implemented in Phase 2+)
-# from sqlmodel import create_engine
-# engine = create_engine(DATABASE_URL, echo=True)
-
-
-def get_db() -> Generator[Any, None, None]:
+def create_tables() -> None:
     """
-    Placeholder database session dependency.
+    Create all database tables defined in SQLModel models.
 
-    This will be implemented in Phase 2+ when database models are created.
-    Currently yields None as a placeholder.
+    This function should be called on application startup to ensure
+    all tables exist in the database.
+    """
+    # Import models to ensure they are registered with SQLModel
+    from src.models import User  # noqa: F401
 
-    Usage (future):
+    SQLModel.metadata.create_all(engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    """
+    Database session dependency for FastAPI routes.
+
+    Yields a database session that is automatically closed after use.
+
+    Usage:
         @app.get("/items")
         def get_items(db: Session = Depends(get_db)):
-            return db.query(Item).all()
+            return db.exec(select(Item)).all()
+
+    Yields:
+        Session: SQLModel database session
     """
-    # Placeholder: No actual database connection in foundation phase
-    yield None
+    with Session(engine) as session:
+        yield session
 
 
 async def init_db() -> None:
     """
-    Placeholder for database initialization.
+    Initialize database on application startup.
 
-    This will create tables and run migrations in Phase 2+.
-    Currently does nothing.
+    Creates all tables if they don't exist.
     """
-    # Placeholder: No database initialization in foundation phase
-    pass
+    create_tables()
+    print("✅ Database tables created/verified")
 
 
 async def close_db() -> None:
     """
-    Placeholder for database connection cleanup.
+    Close database connections on application shutdown.
 
-    This will close database connections on shutdown in Phase 2+.
-    Currently does nothing.
+    Disposes of the engine connection pool.
     """
-    # Placeholder: No database cleanup in foundation phase
-    pass
+    engine.dispose()
+    print("✅ Database connections closed")

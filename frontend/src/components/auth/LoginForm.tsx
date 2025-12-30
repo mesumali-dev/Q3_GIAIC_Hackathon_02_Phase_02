@@ -17,7 +17,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "@/lib/auth-client";
+import { login } from "@/lib/api";
 
 interface FormErrors {
   email?: string;
@@ -76,27 +76,19 @@ export default function LoginForm() {
     setIsLoading(true);
 
     try {
-      // Call Better Auth sign in
-      const result = await signIn.email({
-        email,
-        password,
-      });
+      // Call backend API to login
+      const result = await login(email, password);
 
       if (result.error) {
         // Handle API errors with user-friendly messages
-        let errorMessage = "Login failed. Please try again.";
+        let errorMessage = result.error;
 
-        // Check for common error types
+        // Check for common error types and provide friendly messages
         if (
-          result.error.message?.toLowerCase().includes("invalid") ||
-          result.error.message?.toLowerCase().includes("incorrect") ||
-          result.error.message?.toLowerCase().includes("wrong")
+          result.error.toLowerCase().includes("invalid") ||
+          result.error.toLowerCase().includes("credentials")
         ) {
           errorMessage = "Invalid email or password. Please check your credentials.";
-        } else if (result.error.message?.toLowerCase().includes("not found")) {
-          errorMessage = "No account found with this email. Please register first.";
-        } else if (result.error.message) {
-          errorMessage = result.error.message;
         }
 
         setErrors({ general: errorMessage });

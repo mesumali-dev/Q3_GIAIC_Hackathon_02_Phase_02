@@ -24,10 +24,10 @@
 
 **Purpose**: Install dependencies and prepare for refactor
 
-- [ ] T001 Install passlib[bcrypt] dependency in backend using `uv add "passlib[bcrypt]"`
-- [ ] T002 [P] Create backend/src/models/ directory if not exists
-- [ ] T003 [P] Create backend/src/services/ directory if not exists
-- [ ] T004 [P] Verify DATABASE_URL is set in backend/.env for Neon PostgreSQL
+- [x] T001 Install passlib[bcrypt] dependency in backend using `uv add "passlib[bcrypt]"`
+- [x] T002 [P] Create backend/src/models/ directory if not exists
+- [x] T003 [P] Create backend/src/services/ directory if not exists
+- [x] T004 [P] Verify DATABASE_URL is set in backend/.env for Neon PostgreSQL
 
 ---
 
@@ -37,13 +37,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create User SQLModel in backend/src/models/user.py per data-model.md
-- [ ] T006 Create backend/src/models/__init__.py with User export
-- [ ] T007 Create database session helper in backend/src/database.py with create_tables()
-- [ ] T008 Update backend/src/main.py to call create_tables() on startup
-- [ ] T009 Create auth service in backend/src/services/auth_service.py with password hashing functions
-- [ ] T010 [P] Create Pydantic schemas in backend/src/schemas/auth.py (RegisterRequest, LoginRequest, AuthResponse)
-- [ ] T011 [P] Create backend/src/schemas/__init__.py with exports
+- [x] T005 Create User SQLModel in backend/src/models/user.py per data-model.md
+- [x] T006 Create backend/src/models/__init__.py with User export
+- [x] T007 Create database session helper in backend/src/database.py with create_tables()
+- [x] T008 Update backend/src/main.py to call create_tables() on startup
+- [x] T009 Create auth service in backend/src/services/auth_service.py with password hashing functions
+- [x] T010 [P] Create Pydantic schemas in backend/src/schemas/auth.py (RegisterRequest, LoginRequest, AuthResponse)
+- [x] T011 [P] Create backend/src/schemas/__init__.py with exports
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -57,18 +57,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T012 [P] [US1] Add test_register_success in backend/tests/test_auth.py
-- [ ] T013 [P] [US1] Add test_register_duplicate_email (409) in backend/tests/test_auth.py
-- [ ] T014 [P] [US1] Add test_register_short_password (400) in backend/tests/test_auth.py
-- [ ] T015 [P] [US1] Add test_register_invalid_email (400) in backend/tests/test_auth.py
+- [x] T012 [P] [US1] Add test_register_success in backend/tests/test_auth.py
+- [x] T013 [P] [US1] Add test_register_duplicate_email (409) in backend/tests/test_auth.py
+- [x] T014 [P] [US1] Add test_register_short_password (400) in backend/tests/test_auth.py
+- [x] T015 [P] [US1] Add test_register_invalid_email (400) in backend/tests/test_auth.py
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Add create_user() function to backend/src/services/auth_service.py
-- [ ] T017 [US1] Add create_access_token() function to backend/src/services/auth_service.py
-- [ ] T018 [US1] Add POST /api/auth/register endpoint to backend/src/api/auth.py
-- [ ] T019 [US1] Handle 409 Conflict for duplicate email in register endpoint
-- [ ] T020 [US1] Handle 400 Bad Request for validation errors in register endpoint
+- [x] T016 [US1] Add create_user() function to backend/src/services/auth_service.py
+- [x] T017 [US1] Add create_access_token() function to backend/src/services/auth_service.py
+- [x] T018 [US1] Add POST /api/auth/register endpoint to backend/src/api/auth.py
+- [x] T019 [US1] Handle 409 Conflict for duplicate email in register endpoint
+- [x] T020 [US1] Handle 400 Bad Request for validation errors in register endpoint
 
 **Checkpoint**: User Story 1 complete - users can register via backend API
 
@@ -82,15 +82,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Add test_login_success in backend/tests/test_auth.py
-- [ ] T022 [P] [US2] Add test_login_wrong_password (401) in backend/tests/test_auth.py
-- [ ] T023 [P] [US2] Add test_login_nonexistent_email (401) in backend/tests/test_auth.py
+- [x] T021 [P] [US2] Add test_login_success in backend/tests/test_auth.py
+- [x] T022 [P] [US2] Add test_login_wrong_password (401) in backend/tests/test_auth.py
+- [x] T023 [P] [US2] Add test_login_nonexistent_email (401) in backend/tests/test_auth.py
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Add authenticate_user() function to backend/src/services/auth_service.py
-- [ ] T025 [US2] Add POST /api/auth/login endpoint to backend/src/api/auth.py
-- [ ] T026 [US2] Return same error message for wrong password and non-existent email (security)
+- [x] T024 [US2] Add authenticate_user() function to backend/src/services/auth_service.py
+- [x] T025 [US2] Add POST /api/auth/login endpoint to backend/src/api/auth.py
+- [x] T026 [US2] Return same error message for wrong password and non-existent email (security)
 
 **Checkpoint**: User Stories 1 and 2 complete - users can register AND login via backend
 
@@ -104,15 +104,15 @@
 
 ### Tests for User Story 3
 
-- [ ] T027 [P] [US3] Add test_verify_valid_token in backend/tests/test_auth.py
-- [ ] T028 [P] [US3] Add test_verify_expired_token (401) in backend/tests/test_auth.py
-- [ ] T029 [P] [US3] Add test_verify_invalid_token (401) in backend/tests/test_auth.py
-- [ ] T030 [P] [US3] Add test_verify_missing_token (401) in backend/tests/test_auth.py
+- [x] T027 [P] [US3] Add test_verify_valid_token in backend/tests/test_auth.py
+- [x] T028 [P] [US3] Add test_verify_expired_token (401) in backend/tests/test_auth.py
+- [x] T029 [P] [US3] Add test_verify_invalid_token (401) in backend/tests/test_auth.py
+- [x] T030 [P] [US3] Add test_verify_missing_token (401) in backend/tests/test_auth.py
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Verify existing GET /api/auth/verify endpoint works with new User model
-- [ ] T032 [US3] Update JWT payload to include user email from database
+- [x] T031 [US3] Verify existing GET /api/auth/verify endpoint works with new User model
+- [x] T032 [US3] Update JWT payload to include user email from database
 
 **Checkpoint**: All P1 user stories complete - full backend auth working
 
@@ -122,13 +122,13 @@
 
 **Purpose**: Remove Better Auth and Prisma dependencies before frontend refactor
 
-- [ ] T033 Delete frontend/src/lib/auth.ts (Better Auth server config)
-- [ ] T034 [P] Delete frontend/src/lib/auth-client.ts (Better Auth client)
-- [ ] T035 [P] Delete frontend/src/app/api/auth/[...all]/ directory (Better Auth route)
-- [ ] T036 [P] Delete frontend/prisma/ directory
-- [ ] T037 [P] Delete frontend/src/generated/ directory (Prisma client)
-- [ ] T038 Remove better-auth, @prisma/client, prisma from frontend/package.json
-- [ ] T039 Run `npm install` in frontend to update node_modules
+- [x] T033 Delete frontend/src/lib/auth.ts (Better Auth server config)
+- [x] T034 [P] Delete frontend/src/lib/auth-client.ts (Better Auth client)
+- [x] T035 [P] Delete frontend/src/app/api/auth/[...all]/ directory (Better Auth route)
+- [x] T036 [P] Delete frontend/prisma/ directory
+- [x] T037 [P] Delete frontend/src/generated/ directory (Prisma client)
+- [x] T038 Remove better-auth, @prisma/client, prisma from frontend/package.json
+- [x] T039 Run `npm install` in frontend to update node_modules
 
 **Checkpoint**: Frontend cleaned up - ready for new auth implementation
 
@@ -142,9 +142,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T040 [US4] Add logout() function to frontend/src/lib/api.ts that clears localStorage token
-- [ ] T041 [US4] Update logout button in frontend/src/app/page.tsx to call logout()
-- [ ] T042 [US4] Ensure logout redirects to /login page
+- [x] T040 [US4] Add logout() function to frontend/src/lib/api.ts that clears localStorage token
+- [x] T041 [US4] Update logout button in frontend/src/app/page.tsx to call logout()
+- [x] T042 [US4] Ensure logout redirects to /login page
 
 **Checkpoint**: User Story 4 complete - users can log out
 
@@ -158,14 +158,14 @@
 
 ### Implementation for User Story 5
 
-- [ ] T043 [US5] Create auth helper in frontend/src/lib/auth-helper.ts for token checking
-- [ ] T044 [US5] Add register() function to frontend/src/lib/api.ts calling POST /api/auth/register
-- [ ] T045 [US5] Add login() function to frontend/src/lib/api.ts calling POST /api/auth/login
-- [ ] T046 [US5] Update frontend/src/components/auth/RegisterForm.tsx to use api.ts register()
-- [ ] T047 [US5] Update frontend/src/components/auth/LoginForm.tsx to use api.ts login()
-- [ ] T048 [US5] Update frontend/middleware.ts to check localStorage token (client-side approach)
-- [ ] T049 [US5] Implement redirect to /login for unauthenticated users
-- [ ] T050 [US5] Implement redirect to / for authenticated users on /login and /register
+- [x] T043 [US5] Create auth helper in frontend/src/lib/auth-helper.ts for token checking
+- [x] T044 [US5] Add register() function to frontend/src/lib/api.ts calling POST /api/auth/register
+- [x] T045 [US5] Add login() function to frontend/src/lib/api.ts calling POST /api/auth/login
+- [x] T046 [US5] Update frontend/src/components/auth/RegisterForm.tsx to use api.ts register()
+- [x] T047 [US5] Update frontend/src/components/auth/LoginForm.tsx to use api.ts login()
+- [x] T048 [US5] Update frontend/middleware.ts to check localStorage token (client-side approach)
+- [x] T049 [US5] Implement redirect to /login for unauthenticated users
+- [x] T050 [US5] Implement redirect to / for authenticated users on /login and /register
 
 **Checkpoint**: All user stories complete - full auth flow working
 
@@ -175,9 +175,9 @@
 
 **Purpose**: Final validation and testing
 
-- [ ] T051 [P] Verify `npm list prisma` returns empty in frontend/
-- [ ] T052 [P] Verify `npm list better-auth` returns empty in frontend/
-- [ ] T053 Run all backend tests with `uv run pytest backend/tests/test_auth.py -v`
+- [x] T051 [P] Verify `npm list prisma` returns empty in frontend/
+- [x] T052 [P] Verify `npm list better-auth` returns empty in frontend/
+- [x] T053 Run all backend tests with `uv run pytest backend/tests/test_auth.py -v`
 - [ ] T054 Run quickstart.md validation checklist
 - [ ] T055 Manual E2E test: register → logout → login → verify → logout
 
