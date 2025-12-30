@@ -1,20 +1,22 @@
 /**
  * Next.js Middleware for Route Protection
  *
- * Protects routes based on authentication state:
- * - Redirects unauthenticated users to /login for protected routes
- * - Redirects authenticated users away from /login and /register
+ * Note: Since we use localStorage for token storage (client-side only),
+ * this middleware cannot check authentication state directly.
+ * Route protection is handled client-side in the page components.
  *
- * @see US3: Protected Route Access
+ * This middleware:
+ * - Allows all routes to pass through
+ * - Excludes API routes and static files from processing
+ *
+ * Client-side route protection is implemented in:
+ * - /src/app/page.tsx (checks auth on load)
+ * - Components redirect to /login when unauthorized
+ *
+ * @see specs/003-backend-auth-refactor
  */
 
 import { NextRequest, NextResponse } from "next/server";
-
-// Public routes that don't require authentication
-const publicRoutes = ["/login", "/register"];
-
-// Auth routes that authenticated users should be redirected away from
-const authRoutes = ["/login", "/register"];
 
 // API routes to exclude from middleware
 const apiRoutes = ["/api/"];
@@ -36,30 +38,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for Better Auth session cookie
-  // Better Auth uses 'better-auth.session_token' cookie by default
-  const sessionCookie = request.cookies.get("better-auth.session_token");
-  const hasSession = !!sessionCookie?.value;
-
-  // Check if current path is a public route
-  const isPublicRoute = publicRoutes.includes(pathname);
-
-  // Check if current path is an auth route (login/register)
-  const isAuthRoute = authRoutes.includes(pathname);
-
-  // Redirect unauthenticated users to login for protected routes
-  if (!hasSession && !isPublicRoute) {
-    const loginUrl = new URL("/login", request.url);
-    // Add redirect parameter to return after login
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Redirect authenticated users away from auth routes
-  if (hasSession && isAuthRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
+  // All routes pass through - client-side handles auth checks
+  // This is because localStorage is not accessible in middleware (server-side)
   return NextResponse.next();
 }
 

@@ -16,7 +16,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signUp } from "@/lib/auth-client";
+import { register } from "@/lib/api";
 
 interface FormErrors {
   email?: string;
@@ -86,17 +86,13 @@ export default function RegisterForm() {
     setIsLoading(true);
 
     try {
-      // Call Better Auth sign up
-      const result = await signUp.email({
-        email,
-        password,
-        name: email.split("@")[0], // Use email prefix as default name
-      });
+      // Call backend API to register
+      const result = await register(email, password);
 
       if (result.error) {
         // Handle API errors
         setErrors({
-          general: result.error.message || "Registration failed. Please try again.",
+          general: result.error,
         });
         return;
       }
