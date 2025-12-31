@@ -100,7 +100,10 @@ export default function Home() {
               </h2>
               <div className="flex flex-col items-center gap-2">
                 <p className="text-zinc-700 dark:text-zinc-300">
-                  Welcome, <span className="font-medium">{user.email}</span>
+                  Welcome, <span className="font-medium">{user.name}</span>
+                </p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                  {user.email}
                 </p>
                 <button
                   onClick={handleSignOut}

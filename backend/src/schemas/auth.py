@@ -13,6 +13,12 @@ from pydantic import BaseModel, EmailStr, Field
 class RegisterRequest(BaseModel):
     """Request body for user registration."""
 
+    name: str = Field(
+        min_length=1,
+        max_length=255,
+        description="User display name",
+        examples=["John Doe"],
+    )
     email: EmailStr = Field(
         description="Valid email address",
         examples=["user@example.com"],
@@ -41,6 +47,7 @@ class UserResponse(BaseModel):
     """User data returned in responses (no password)."""
 
     id: str = Field(description="User UUID")
+    name: str = Field(description="User display name")
     email: str = Field(description="User email")
 
     model_config = {"from_attributes": True}

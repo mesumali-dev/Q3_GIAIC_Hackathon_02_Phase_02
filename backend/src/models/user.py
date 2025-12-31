@@ -19,6 +19,7 @@ class User(SQLModel, table=True):
 
     Attributes:
         id: Unique identifier (UUID v4)
+        name: User's display name
         email: User's email address (unique, used for login)
         hashed_password: bcrypt-hashed password (never store plain text)
         created_at: Timestamp when user was created
@@ -31,6 +32,10 @@ class User(SQLModel, table=True):
         default_factory=uuid4,
         primary_key=True,
         description="Unique user identifier",
+    )
+    name: str = Field(
+        max_length=255,
+        description="User display name",
     )
     email: str = Field(
         index=True,
