@@ -109,6 +109,6 @@ async def root():
 from src.api.auth import router as auth_router
 app.include_router(auth_router)
 
-# Future: Task routes will be added in Phase 3+
-# from src.api.tasks import router as tasks_router
-# app.include_router(tasks_router, prefix="/api")
+# Register task routes
+from src.api.tasks import router as tasks_router
+app.include_router(tasks_router)

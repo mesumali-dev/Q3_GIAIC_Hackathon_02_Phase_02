@@ -105,13 +105,21 @@ export default function Home() {
                 <p className="text-sm text-zinc-500 dark:text-zinc-500">
                   {user.email}
                 </p>
-                <button
-                  onClick={handleSignOut}
-                  disabled={isSigningOut}
-                  className="mt-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isSigningOut ? "Signing out..." : "Sign Out"}
-                </button>
+                <div className="flex gap-3 mt-2">
+                  <Link
+                    href="/tasks"
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  >
+                    View Tasks
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isSigningOut ? "Signing out..." : "Sign Out"}
+                  </button>
+                </div>
               </div>
             </>
           ) : (
