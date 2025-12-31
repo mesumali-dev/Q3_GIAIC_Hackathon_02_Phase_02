@@ -169,7 +169,7 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] ${
+              className={`w-full px-4 py-3 border rounded-md text-black focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] ${
                 errors.password
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300"

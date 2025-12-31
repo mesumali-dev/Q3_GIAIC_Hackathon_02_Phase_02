@@ -11,6 +11,14 @@ from src.services.auth_service import (
     hash_password,
     verify_password,
 )
+from src.services.task_service import (
+    create_task,
+    delete_task,
+    get_task,
+    get_tasks,
+    toggle_complete,
+    update_task,
+)
 
 __all__ = [
     "hash_password",
@@ -18,4 +26,10 @@ __all__ = [
     "create_access_token",
     "create_user",
     "authenticate_user",
+    "create_task",
+    "get_tasks",
+    "get_task",
+    "update_task",
+    "delete_task",
+    "toggle_complete",
 ]

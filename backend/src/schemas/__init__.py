@@ -11,6 +11,12 @@ from src.schemas.auth import (
     RegisterRequest,
     UserResponse,
 )
+from src.schemas.task import (
+    TaskCreate,
+    TaskListResponse,
+    TaskResponse,
+    TaskUpdate,
+)
 
 __all__ = [
     "RegisterRequest",
@@ -18,4 +24,8 @@ __all__ = [
     "UserResponse",
     "AuthResponse",
     "ErrorResponse",
+    "TaskCreate",
+    "TaskUpdate",
+    "TaskResponse",
+    "TaskListResponse",
 ]

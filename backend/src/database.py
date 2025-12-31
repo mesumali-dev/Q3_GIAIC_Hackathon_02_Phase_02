@@ -32,7 +32,7 @@ def create_tables() -> None:
     all tables exist in the database.
     """
     # Import models to ensure they are registered with SQLModel
-    from src.models import User  # noqa: F401
+    from src.models import Task, User  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 
