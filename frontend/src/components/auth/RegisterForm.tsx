@@ -19,6 +19,7 @@ import Link from "next/link";
 import { register } from "@/lib/api";
 
 interface FormErrors {
+  name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -29,6 +30,7 @@ export default function RegisterForm() {
   const router = useRouter();
 
   // Form state
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -43,6 +45,13 @@ export default function RegisterForm() {
    */
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
+
+    // Name validation
+    if (!name) {
+      newErrors.name = "Name is required";
+    } else if (name.length > 255) {
+      newErrors.name = "Name must be at most 255 characters";
+    }
 
     // Email validation
     if (!email) {
@@ -87,7 +96,7 @@ export default function RegisterForm() {
 
     try {
       // Call backend API to register
-      const result = await register(email, password);
+      const result = await register(name, email, password);
 
       if (result.error) {
         // Handle API errors
@@ -128,6 +137,34 @@ export default function RegisterForm() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name field */}
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={isLoading}
+              className={`w-full px-4 py-3 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-11 ${
+                errors.name
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300"
+              }`}
+              placeholder="Your name"
+              autoComplete="name"
+            />
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            )}
+          </div>
+
           {/* Email field */}
           <div>
             <label

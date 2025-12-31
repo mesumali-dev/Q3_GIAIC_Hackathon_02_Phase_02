@@ -87,12 +87,13 @@ def create_access_token(user: User) -> str:
     )
 
 
-def create_user(db: Session, email: str, password: str) -> User:
+def create_user(db: Session, name: str, email: str, password: str) -> User:
     """
     Create a new user in the database.
 
     Args:
         db: Database session
+        name: User's display name
         email: User's email address
         password: Plain text password (will be hashed)
 
@@ -103,7 +104,7 @@ def create_user(db: Session, email: str, password: str) -> User:
         Caller should handle IntegrityError for duplicate emails
     """
     hashed = hash_password(password)
-    user = User(email=email, hashed_password=hashed)
+    user = User(name=name, email=email, hashed_password=hashed)
 
     db.add(user)
     db.commit()

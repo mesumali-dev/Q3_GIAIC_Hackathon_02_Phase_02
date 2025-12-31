@@ -107,13 +107,14 @@ async def test_register_success(client: AsyncClient):
     """Test successful user registration."""
     response = await client.post(
         "/api/auth/register",
-        json={"email": "newuser@example.com", "password": "password123"},
+        json={"name": "New User", "email": "newuser@example.com", "password": "password123"},
     )
 
     assert response.status_code == 200
     data = response.json()
     assert "access_token" in data
     assert data["token_type"] == "bearer"
+    assert data["user"]["name"] == "New User"
     assert data["user"]["email"] == "newuser@example.com"
     assert "id" in data["user"]
 
@@ -124,13 +125,13 @@ async def test_register_duplicate_email(client: AsyncClient):
     # First registration
     await client.post(
         "/api/auth/register",
-        json={"email": "duplicate@example.com", "password": "password123"},
+        json={"name": "First User", "email": "duplicate@example.com", "password": "password123"},
     )
 
     # Second registration with same email
     response = await client.post(
         "/api/auth/register",
-        json={"email": "duplicate@example.com", "password": "password456"},
+        json={"name": "Second User", "email": "duplicate@example.com", "password": "password456"},
     )
 
     assert response.status_code == 409
@@ -143,7 +144,7 @@ async def test_register_short_password(client: AsyncClient):
     """Test 400 response for password less than 8 characters."""
     response = await client.post(
         "/api/auth/register",
-        json={"email": "user@example.com", "password": "short"},
+        json={"name": "Test User", "email": "user@example.com", "password": "short"},
     )
 
     assert response.status_code == 422  # FastAPI returns 422 for validation errors
@@ -156,7 +157,7 @@ async def test_register_invalid_email(client: AsyncClient):
     """Test 400 response for invalid email format."""
     response = await client.post(
         "/api/auth/register",
-        json={"email": "not-an-email", "password": "password123"},
+        json={"name": "Test User", "email": "not-an-email", "password": "password123"},
     )
 
     assert response.status_code == 422  # FastAPI returns 422 for validation errors
@@ -175,7 +176,7 @@ async def test_login_success(client: AsyncClient):
     # First register a user
     await client.post(
         "/api/auth/register",
-        json={"email": "loginuser@example.com", "password": "password123"},
+        json={"name": "Login User", "email": "loginuser@example.com", "password": "password123"},
     )
 
     # Then login
@@ -188,6 +189,7 @@ async def test_login_success(client: AsyncClient):
     data = response.json()
     assert "access_token" in data
     assert data["token_type"] == "bearer"
+    assert data["user"]["name"] == "Login User"
     assert data["user"]["email"] == "loginuser@example.com"
 
 
@@ -197,7 +199,7 @@ async def test_login_wrong_password(client: AsyncClient):
     # First register a user
     await client.post(
         "/api/auth/register",
-        json={"email": "wrongpass@example.com", "password": "correctpassword"},
+        json={"name": "Wrong Pass User", "email": "wrongpass@example.com", "password": "correctpassword"},
     )
 
     # Try login with wrong password
@@ -335,7 +337,7 @@ async def test_register_then_verify_token(client: AsyncClient):
     # Register
     register_response = await client.post(
         "/api/auth/register",
-        json={"email": "integrationtest@example.com", "password": "password123"},
+        json={"name": "Integration User", "email": "integrationtest@example.com", "password": "password123"},
     )
     assert register_response.status_code == 200
     token = register_response.json()["access_token"]
@@ -358,7 +360,7 @@ async def test_login_then_verify_token(client: AsyncClient):
     # Register first
     await client.post(
         "/api/auth/register",
-        json={"email": "loginverify@example.com", "password": "password123"},
+        json={"name": "Login Verify User", "email": "loginverify@example.com", "password": "password123"},
     )
 
     # Login

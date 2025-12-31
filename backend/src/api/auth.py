@@ -63,7 +63,7 @@ async def register(
 
     try:
         # Create new user
-        user = create_user(db, request.email, request.password)
+        user = create_user(db, request.name, request.email, request.password)
 
         # Generate JWT token
         access_token = create_access_token(user)
@@ -71,7 +71,7 @@ async def register(
         return AuthResponse(
             access_token=access_token,
             token_type="bearer",
-            user=UserResponse(id=str(user.id), email=user.email),
+            user=UserResponse(id=str(user.id), name=user.name, email=user.email),
         )
 
     except IntegrityError:
@@ -119,7 +119,7 @@ async def login(
     return AuthResponse(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse(id=str(user.id), email=user.email),
+        user=UserResponse(id=str(user.id), name=user.name, email=user.email),
     )
 
 
