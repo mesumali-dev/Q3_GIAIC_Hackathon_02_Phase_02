@@ -84,19 +84,21 @@ export default function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border p-4 transition-all ${
-        task.is_completed ? "opacity-75" : ""
+      className={`group bg-white rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300 ${
+        task.is_completed
+          ? "border-gray-100 bg-gray-50/50"
+          : "border-orange-100/50 hover:border-orange-200"
       }`}
     >
-      <div className="flex items-start gap-3">
+      <div className="p-5 flex items-start gap-4">
         {/* Checkbox */}
         <button
           onClick={handleToggle}
           disabled={isToggling}
-          className={`flex-shrink-0 w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center transition-colors ${
+          className={`flex-shrink-0 w-7 h-7 mt-0.5 rounded-full border-2 flex items-center justify-center transition-all ${
             task.is_completed
-              ? "bg-green-500 border-green-500"
-              : "border-gray-300 hover:border-green-400"
+              ? "bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-400 shadow-md shadow-emerald-200/50"
+              : "border-gray-300 hover:border-orange-400 hover:bg-orange-50"
           } ${isToggling ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
           aria-label={
             task.is_completed ? "Mark as incomplete" : "Mark as complete"
@@ -112,7 +114,7 @@ export default function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 d="M5 13l4 4L19 7"
               />
             </svg>
@@ -122,27 +124,42 @@ export default function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
         {/* Content */}
         <div className="flex-grow min-w-0">
           <h3
-            className={`text-lg font-medium ${
-              task.is_completed ? "line-through text-gray-500" : "text-gray-900"
+            className={`text-lg font-semibold leading-snug ${
+              task.is_completed ? "line-through text-gray-400" : "text-gray-900"
             }`}
           >
             {task.title}
           </h3>
           {task.description && (
-            <p className="mt-1 text-gray-600 text-sm whitespace-pre-wrap">
+            <p className={`mt-2 text-sm leading-relaxed whitespace-pre-wrap ${
+              task.is_completed ? "text-gray-400" : "text-gray-500"
+            }`}>
               {task.description}
             </p>
           )}
-          <p className="mt-2 text-xs text-gray-400">
-            Created {formatDate(task.created_at)}
-          </p>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {formatDate(task.created_at)}
+            </span>
+            {task.is_completed && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-600 text-xs font-medium rounded-full">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Done
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Actions */}
-        <div className="flex-shrink-0 flex gap-2">
+        <div className="flex-shrink-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Link
             href={`/tasks/${task.id}/edit`}
-            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+            className="p-2.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors"
             aria-label="Edit task"
           >
             <svg
@@ -154,14 +171,14 @@ export default function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={1.5}
                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
               />
             </svg>
           </Link>
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+            className="p-2.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
             aria-label="Delete task"
           >
             <svg
@@ -173,7 +190,7 @@ export default function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
+                strokeWidth={1.5}
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
               />
             </svg>
@@ -183,29 +200,43 @@ export default function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
 
       {/* Delete confirmation modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in fade-in zoom-in duration-200">
+            <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-rose-100 flex items-center justify-center">
+              <svg className="w-7 h-7 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
               Delete Task?
             </h3>
-            <p className="text-gray-600 mb-4">
-              Are you sure you want to delete
-              &quot;{task.title}&quot;?
+            <p className="text-gray-500 text-center mb-6">
+              This will permanently delete &quot;{task.title}&quot;. This action cannot be undone.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors cursor-pointer"
+                className="flex-1 px-5 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors disabled:opacity-50 cursor-pointer"
+                className="flex-1 px-5 py-3 text-white bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 font-semibold rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-rose-200/50"
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                {isDeleting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete"
+                )}
               </button>
             </div>
           </div>
