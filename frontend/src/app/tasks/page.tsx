@@ -48,54 +48,57 @@ export default function TasksPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <svg
-            className="animate-spin h-8 w-8 text-blue-600"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          <p className="mt-3 text-gray-500">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-4 border-orange-100 border-t-orange-500 animate-spin" />
+            <div className="absolute inset-0 w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 blur-xl opacity-30" />
+          </div>
+          <p className="text-gray-500 font-medium">Loading your tasks...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+      {/* Background Decorations */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-orange-200/30 to-rose-200/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 -left-32 w-80 h-80 bg-gradient-to-br from-teal-200/20 to-cyan-200/20 rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-lg">
-                ✓
+      <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-white/30 shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-rose-400 rounded-xl blur-lg opacity-50 group-hover:opacity-70 transition-opacity" />
+                <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 via-rose-500 to-pink-500 flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
               </div>
-              <h1 className="text-xl font-bold text-gray-900">My Tasks</h1>
+              <span className="text-xl font-bold bg-gradient-to-r from-orange-600 via-rose-600 to-pink-600 bg-clip-text text-transparent">
+                Flowdo
+              </span>
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.name}</span>
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/50 rounded-full">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-rose-400 flex items-center justify-center text-white font-semibold text-sm">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <span className="text-sm font-medium text-gray-700 hidden sm:block">{user?.name}</span>
+            </div>
             <button
               onClick={() => {
                 logout();
                 router.push("/login");
               }}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors hover:bg-white/50 rounded-full"
             >
               Sign out
             </button>
@@ -104,16 +107,21 @@ export default function TasksPage() {
       </header>
 
       {/* Main content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Action bar */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900">Tasks</h2>
+      <main className="max-w-5xl mx-auto px-6 py-10 relative">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+              My Tasks
+            </h1>
+            <p className="text-gray-500">Stay organized and get things done</p>
+          </div>
           <Link
             href="/tasks/new"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors min-h-[44px]"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 text-white font-semibold rounded-2xl shadow-lg shadow-orange-200/50 hover:shadow-xl hover:shadow-orange-300/50 transition-all hover:-translate-y-0.5 active:translate-y-0"
           >
             <svg
-              className="w-5 h-5 mr-2"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
