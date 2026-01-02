@@ -1,16 +1,130 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { logout, verifyAuth } from "@/lib/api";
 import { getStoredUser, isAuthenticated, StoredUser } from "@/lib/auth-helper";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+
+const testimonials = [
+  {
+    name: "Sarah Mitchell",
+    role: "Product Designer",
+    company: "Spotify",
+    avatar: "SM",
+    color: "from-pink-400 to-rose-500",
+    text: "Flowdo completely changed how I manage daily projects. Simple, fast, and exactly what I needed to stay focused.",
+    rating: 5
+  },
+  {
+    name: "James Rodriguez",
+    role: "Software Engineer",
+    company: "Google",
+    avatar: "JR",
+    color: "from-blue-400 to-indigo-500",
+    text: "I've tried every app out there. This is the only one that stuck. simple yet powerful.",
+    rating: 5
+  },
+  {
+    name: "David Park",
+    role: "Content Creator",
+    company: "YouTube",
+    avatar: "DP",
+    color: "from-violet-400 to-purple-500",
+    text: "As a creator, my mind is always racing. Flowdo is the bucket that catches all my ideas before they disappear.",
+    rating: 5
+  },
+  {
+    name: "Lisa Wong",
+    role: "Project Manager",
+    company: "Microsoft",
+    avatar: "LW",
+    color: "from-cyan-400 to-blue-500",
+    text: "The interface is so clean it actually makes me want to organize my tasks. A rare achievement for a todo app.",
+    rating: 5
+  },
+  {
+    name: "Alex Rivera",
+    role: "Freelance Developer",
+    company: "Upwork",
+    avatar: "AR",
+    color: "from-lime-400 to-green-500",
+    text: "I love how it doesn't force complex workflows on you. It's as simple as paper but with the power of digital sync.",
+    rating: 5
+  },
+  {
+    name: "Sophie Bennett",
+    role: "Graduate Student",
+    company: "Stanford",
+    avatar: "SB",
+    color: "from-fuchsia-400 to-pink-500",
+    text: "Finally, a way to balance my research, classes, and personal life without losing my mind. Thank you, Flowdo!",
+    rating: 5
+  }
+];
+
+const TestimonialGrid = () => {
+  return (
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+        {testimonials.map((t, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.1 }}
+            className="break-inside-avoid"
+          >
+            <div className="bg-white/60 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 shadow-[0_10px_30px_rgba(251,146,60,0.05)] hover:shadow-xl hover:shadow-orange-100/50 transition-all duration-500 group relative overflow-hidden">
+              {/* Decorative gradient corner */}
+              <div className={`absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br ${t.color} opacity-0 group-hover:opacity-10 rounded-full transition-opacity duration-500`} />
+
+              <div className="flex gap-1 mb-4">
+                {[...Array(t.rating)].map((_, j) => (
+                  <svg key={j} className="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+
+              <blockquote className="text-gray-700 leading-relaxed mb-6 font-medium">
+                &ldquo;{t.text}&rdquo;
+              </blockquote>
+
+              <div className="flex items-center gap-3 pt-4 border-t border-orange-50/50">
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-xs shadow-sm`}>
+                  {t.avatar}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">{t.name}</p>
+                  <p className="text-[10px] font-bold text-orange-500 uppercase tracking-tight">
+                    {t.role} <span className="opacity-30 mx-0.5">|</span> {t.company}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function Home() {
   const router = useRouter();
   const [user, setUser] = useState<StoredUser | null>(null);
   const [isPending, setIsPending] = useState(true);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"]
+  });
+
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -49,7 +163,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-orange-50">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-orange-50">
       {/* Decorative Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-orange-200/40 rounded-full blur-3xl" />
@@ -443,355 +557,314 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 px-6 bg-gradient-to-br from-orange-50 to-amber-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-orange-500 font-semibold text-sm uppercase tracking-wider">Pricing</span>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mt-3 mb-4">
-              Free forever. Seriously.
-            </h2>
-            <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              We believe everyone deserves great task management. No tricks, no trials.
-            </p>
+      <section id="pricing" className="py-32 px-6 relative overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-orange-50/30 to-amber-50/50" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-br from-orange-200/40 to-amber-200/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-br from-amber-200/30 to-yellow-200/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-to-br from-orange-100/20 to-transparent rounded-full blur-3xl" />
+
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(0,0,0) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-20">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-5 py-2 bg-white/80 backdrop-blur-sm rounded-full border border-orange-100 shadow-lg shadow-orange-100/20 mb-6"
+            >
+              <span className="w-2 h-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 animate-pulse" />
+              <span className="text-sm font-bold text-gray-700">Simple Pricing</span>
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight"
+            >
+              Start free,{" "}
+              <span className="relative">
+                <span className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent">
+                  grow unlimited
+                </span>
+                <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+                  <path d="M2 8C50 2 150 2 198 8" stroke="url(#underline-gradient)" strokeWidth="3" strokeLinecap="round"/>
+                  <defs>
+                    <linearGradient id="underline-gradient" x1="0" y1="0" x2="200" y2="0">
+                      <stop stopColor="#f97316"/>
+                      <stop offset="0.5" stopColor="#f59e0b"/>
+                      <stop offset="1" stopColor="#eab308"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </span>
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto"
+            >
+              No hidden fees. No credit card required. Just pure productivity.
+            </motion.p>
           </div>
 
-          {/* Pricing Card */}
-          <div className="bg-white rounded-3xl shadow-xl shadow-orange-100/50 p-10 md:p-12 text-center max-w-lg mx-auto border border-orange-100">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-100 rounded-full mb-6">
-              <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-sm font-medium text-green-700">Always Free</span>
-            </div>
-            <div className="mb-6">
-              <span className="text-6xl font-black text-gray-900">$0</span>
-              <span className="text-gray-400 text-lg">/month</span>
-            </div>
-            <ul className="space-y-4 mb-10 text-left">
-              {[
-                "Unlimited tasks",
-                "All features included",
-                "Sync across devices",
-                "Weekly insights",
-                "Priority support",
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-700">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/register"
-              className="block w-full py-4 text-white font-semibold bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl shadow-lg shadow-orange-200/50 hover:shadow-xl transition-shadow"
+          {/* Pricing Cards */}
+          <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Starter Plan */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="relative group"
             >
-              Get Started — It&apos;s Free
-            </Link>
-            <p className="text-xs text-gray-400 mt-4">No credit card required</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-200/50 to-gray-100/50 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-10 border border-gray-100 shadow-xl shadow-gray-200/20 h-full flex flex-col overflow-hidden">
+                {/* Decorative corner */}
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-gray-100 to-gray-50 rounded-full opacity-50" />
+
+                {/* Plan badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-100 rounded-full w-fit mb-6">
+                  <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                  </svg>
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Starter</span>
+                </div>
+
+                <h3 className="text-3xl font-black text-gray-900 mb-2">Free Forever</h3>
+                <p className="text-gray-500 mb-8 leading-relaxed">Perfect for individuals getting started with mindful productivity.</p>
+
+                <div className="flex items-baseline gap-2 mb-10">
+                  <span className="text-6xl font-black text-gray-900">$0</span>
+                  <div className="flex flex-col">
+                    <span className="text-gray-400 font-medium text-sm">/month</span>
+                    <span className="text-gray-300 text-xs">forever free</span>
+                  </div>
+                </div>
+
+                <ul className="space-y-4 mb-10 flex-1">
+                  {[
+                    { text: "Unlimited basic tasks", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
+                    { text: "Pick Three methodology", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
+                    { text: "Web dashboard access", icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
+                    { text: "Daily focus reminders", icon: "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" },
+                  ].map((item, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.1 * i }}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200/80 transition-colors">
+                        <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                        </svg>
+                      </div>
+                      <span className="text-gray-700 font-medium">{item.text}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/register"
+                  className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold text-center hover:bg-gray-800 hover:shadow-xl hover:shadow-gray-300/30 transition-all flex items-center justify-center gap-2 group/btn"
+                >
+                  Get Started Free
+                  <svg className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Premium Plan */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="relative group"
+            >
+              {/* Glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-br from-orange-400 via-amber-400 to-yellow-400 rounded-[2.8rem] blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
+
+              <div className="relative bg-white rounded-[2.5rem] p-10 border-2 border-orange-200 shadow-2xl shadow-orange-200/30 h-full flex flex-col overflow-hidden">
+                {/* Decorative elements */}
+                <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-orange-400/20 to-amber-400/10 rounded-full" />
+                <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-gradient-to-br from-amber-400/10 to-yellow-400/5 rounded-full" />
+
+                {/* Popular badge */}
+                <div className="absolute -top-px -right-px">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 blur-sm" />
+                    <div className="relative bg-gradient-to-r from-orange-500 to-amber-500 text-white px-6 py-2.5 rounded-bl-2xl rounded-tr-[2.3rem] text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      Most Popular
+                    </div>
+                  </div>
+                </div>
+
+                {/* Plan badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-orange-100 to-amber-100 rounded-full w-fit mb-6">
+                  <svg className="w-4 h-4 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span className="text-xs font-bold text-orange-600 uppercase tracking-wider">Premium</span>
+                </div>
+
+                <h3 className="text-3xl font-black text-gray-900 mb-2">Unlock Everything</h3>
+                <p className="text-gray-500 mb-8 leading-relaxed">Advanced AI-powered features for maximum productivity.</p>
+
+                <div className="flex items-baseline gap-2 mb-4">
+                  <span className="text-6xl font-black bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">$0</span>
+                  <div className="flex flex-col">
+                    <span className="text-gray-400 font-medium text-sm line-through opacity-50">$9/mo</span>
+                    <span className="text-orange-500 text-xs font-bold">BETA ACCESS</span>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-full w-fit mb-8">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs font-bold text-green-700">Limited time offer</span>
+                </div>
+
+                <ul className="space-y-4 mb-10 flex-1">
+                  {[
+                    { text: "Everything in Starter", icon: "M5 13l4 4L19 7", highlight: false },
+                    { text: "Smart AI task suggestions", icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z", highlight: true },
+                    { text: "Weekly productivity insights", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", highlight: true },
+                    { text: "Custom themes & colors", icon: "M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01", highlight: false },
+                    { text: "Priority support 24/7", icon: "M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z", highlight: false },
+                    { text: "Unlimited cross-device sync", icon: "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z", highlight: false },
+                  ].map((item, i) => (
+                    <motion.li
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.1 * i }}
+                      className="flex items-center gap-4"
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${item.highlight ? 'bg-gradient-to-br from-orange-400 to-amber-400 shadow-lg shadow-orange-200/50' : 'bg-gradient-to-br from-orange-100 to-amber-100 group-hover:from-orange-200 group-hover:to-amber-200'}`}>
+                        <svg className={`w-5 h-5 ${item.highlight ? 'text-white' : 'text-orange-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                        </svg>
+                      </div>
+                      <span className={`font-medium ${item.highlight ? 'text-gray-900 font-bold' : 'text-gray-700'}`}>
+                        {item.text}
+                        {item.highlight && <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] font-black rounded-full uppercase">AI</span>}
+                      </span>
+                    </motion.li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/register"
+                  className="w-full py-4 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[length:200%_100%] text-white rounded-2xl font-bold text-center shadow-xl shadow-orange-300/40 hover:shadow-2xl hover:shadow-orange-300/50 hover:bg-right transition-all duration-500 flex items-center justify-center gap-2 group/btn"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Unlock Premium — Free
+                  <svg className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </div>
+            </motion.div>
           </div>
+
+          {/* Bottom trust section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-16 text-center"
+          >
+            <div className="inline-flex flex-col sm:flex-row items-center gap-6 sm:gap-10 px-8 py-6 bg-white/60 backdrop-blur-xl rounded-3xl border border-orange-100 shadow-lg shadow-orange-100/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-gray-900">Secure & Private</p>
+                  <p className="text-xs text-gray-500">Your data is encrypted</p>
+                </div>
+              </div>
+
+              <div className="hidden sm:block w-px h-10 bg-orange-100" />
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-gray-900">No Credit Card</p>
+                  <p className="text-xs text-gray-500">Start instantly</p>
+                </div>
+              </div>
+
+              <div className="hidden sm:block w-px h-10 bg-orange-100" />
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-bold text-gray-900">10,000+ Users</p>
+                  <p className="text-xs text-gray-500">Join the community</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-24 bg-gradient-to-b from-white to-amber-50/50 overflow-hidden relative">
-        {/* Background Decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-100/40 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-100/30 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-orange-100/20 to-amber-100/20 rounded-full blur-3xl" />
-        </div>
-
+      <section className="py-32 bg-gradient-to-b from-white via-orange-50/20 to-white overflow-hidden relative">
         <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-50/50 backdrop-blur-sm rounded-full border border-orange-100 mb-6">
-              <div className="flex -space-x-2">
-                {["from-pink-400 to-rose-500", "from-blue-400 to-indigo-500", "from-emerald-400 to-teal-500", "from-orange-400 to-amber-500"].map((color, i) => (
-                  <div key={i} className={`w-6 h-6 rounded-full bg-gradient-to-br ${color} border-2 border-white`} />
-                ))}
-              </div>
-              <span className="text-gray-600 text-sm font-medium">Join 10,000+ happy users</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mt-3 mb-4">
+          <div className="text-center mb-12">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4"
+            >
               Loved by <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">thousands</span>
-            </h2>
-            <p className="text-gray-600 text-lg max-w-xl mx-auto">
-              Don&apos;t just take our word for it. Here&apos;s what real users say about Flowdo.
-            </p>
+            </motion.h2>
+            <p className="text-gray-500 text-lg">Real stories from real producers</p>
           </div>
+
+          <TestimonialGrid />
         </div>
 
-        {/* Animated Testimonial Carousel */}
-        <div className="relative">
-          {/* Gradient Overlays for smooth fade effect */}
-          <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-
-          {/* Single Row - Scrolls Left */}
-          <div className="flex animate-scroll-left">
-            <div className="flex gap-5 pr-5">
-              {[
-                {
-                  name: "Sarah Mitchell",
-                  role: "Product Designer",
-                  company: "Spotify",
-                  avatar: "SM",
-                  color: "from-pink-400 to-rose-500",
-                  text: "Flowdo completely changed how I manage my design projects. The daily focus feature helps me prioritize what actually matters instead of drowning in endless task lists.",
-                  rating: 5
-                },
-                {
-                  name: "James Rodriguez",
-                  role: "Software Engineer",
-                  company: "Google",
-                  avatar: "JR",
-                  color: "from-blue-400 to-indigo-500",
-                  text: "I've tried every productivity app out there. Flowdo is the only one that stuck. It's simple, fast, and doesn't get in my way. Exactly what I needed.",
-                  rating: 5
-                },
-                {
-                  name: "Emily Chen",
-                  role: "Marketing Lead",
-                  company: "Airbnb",
-                  avatar: "EC",
-                  color: "from-emerald-400 to-teal-500",
-                  text: "The 'Pick Three' methodology is genius. I went from feeling overwhelmed every day to actually finishing my important tasks. Game changer!",
-                  rating: 5
-                },
-                {
-                  name: "Michael Thompson",
-                  role: "Startup Founder",
-                  company: "TechCraft",
-                  avatar: "MT",
-                  color: "from-orange-400 to-amber-500",
-                  text: "Running a startup means chaos. Flowdo brought order to my mornings. The brain dump feature is my new daily ritual. Can't imagine work without it.",
-                  rating: 5
-                },
-                {
-                  name: "Sophie Anderson",
-                  role: "UX Researcher",
-                  company: "Meta",
-                  avatar: "SA",
-                  color: "from-violet-400 to-purple-500",
-                  text: "Clean, intuitive, and actually helpful. Flowdo respects my time and helps me focus on what truly matters. Best productivity app I've ever used.",
-                  rating: 5
-                },
-                {
-                  name: "Lisa Park",
-                  role: "Freelance Writer",
-                  company: "Self-employed",
-                  avatar: "LP",
-                  color: "from-purple-400 to-violet-500",
-                  text: "As a freelancer, I juggle multiple clients daily. Flowdo's clean interface helps me stay sane. No clutter, no distractions — just pure focus.",
-                  rating: 5
-                },
-                {
-                  name: "David Kumar",
-                  role: "Project Manager",
-                  company: "Microsoft",
-                  avatar: "DK",
-                  color: "from-cyan-400 to-blue-500",
-                  text: "I recommend Flowdo to my entire team. The weekly review feature is perfect for our retrospectives. Simple yet powerful — that's rare.",
-                  rating: 5
-                },
-                {
-                  name: "Anna Williams",
-                  role: "CEO",
-                  company: "StartupHub",
-                  avatar: "AW",
-                  color: "from-rose-400 to-pink-500",
-                  text: "Finally, a task manager that doesn't overwhelm me with features. Flowdo keeps things simple and that's exactly what busy executives need.",
-                  rating: 5
-                },
-                {
-                  name: "Robert Chen",
-                  role: "Data Scientist",
-                  company: "Netflix",
-                  avatar: "RC",
-                  color: "from-indigo-400 to-purple-500",
-                  text: "The morning brain dump changed my life. I start each day with clarity instead of chaos. Highly recommend to anyone feeling overwhelmed.",
-                  rating: 5
-                },
-                {
-                  name: "Maria Garcia",
-                  role: "Creative Director",
-                  company: "Adobe",
-                  avatar: "MG",
-                  color: "from-amber-400 to-orange-500",
-                  text: "Beautiful design meets perfect functionality. Flowdo understands that good UX means getting out of your way. It's become essential to my workflow.",
-                  rating: 5
-                },
-              ].map((testimonial, i) => (
-                <div key={i} className="flex-shrink-0 w-[380px] p-6 bg-white rounded-2xl border border-orange-100 hover:border-orange-300 shadow-xl shadow-orange-200/20 transition-all duration-300 group">
-                  {/* Quote Icon */}
-                  <div className="mb-4">
-                    <svg className="w-8 h-8 text-orange-500/20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                    </svg>
-                  </div>
-
-                  {/* Stars */}
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, j) => (
-                      <svg key={j} className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-
-                  {/* Quote */}
-                  <p className="text-gray-700 leading-relaxed mb-6 font-medium">&ldquo;{testimonial.text}&rdquo;</p>
-
-                  {/* Author */}
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white`}>
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{testimonial.name}</p>
-                      <p className="text-sm text-gray-500">{testimonial.role} at <span className="text-orange-500 font-medium">{testimonial.company}</span></p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Duplicate for seamless loop */}
-            <div className="flex gap-5 pr-5">
-              {[
-                {
-                  name: "Sarah Mitchell",
-                  role: "Product Designer",
-                  company: "Spotify",
-                  avatar: "SM",
-                  color: "from-pink-400 to-rose-500",
-                  text: "Flowdo completely changed how I manage my design projects. The daily focus feature helps me prioritize what actually matters instead of drowning in endless task lists.",
-                  rating: 5
-                },
-                {
-                  name: "James Rodriguez",
-                  role: "Software Engineer",
-                  company: "Google",
-                  avatar: "JR",
-                  color: "from-blue-400 to-indigo-500",
-                  text: "I've tried every productivity app out there. Flowdo is the only one that stuck. It's simple, fast, and doesn't get in my way. Exactly what I needed.",
-                  rating: 5
-                },
-                {
-                  name: "Emily Chen",
-                  role: "Marketing Lead",
-                  company: "Airbnb",
-                  avatar: "EC",
-                  color: "from-emerald-400 to-teal-500",
-                  text: "The 'Pick Three' methodology is genius. I went from feeling overwhelmed every day to actually finishing my important tasks. Game changer!",
-                  rating: 5
-                },
-                {
-                  name: "Michael Thompson",
-                  role: "Startup Founder",
-                  company: "TechCraft",
-                  avatar: "MT",
-                  color: "from-orange-400 to-amber-500",
-                  text: "Running a startup means chaos. Flowdo brought order to my mornings. The brain dump feature is my new daily ritual. Can't imagine work without it.",
-                  rating: 5
-                },
-                {
-                  name: "Sophie Anderson",
-                  role: "UX Researcher",
-                  company: "Meta",
-                  avatar: "SA",
-                  color: "from-violet-400 to-purple-500",
-                  text: "Clean, intuitive, and actually helpful. Flowdo respects my time and helps me focus on what truly matters. Best productivity app I've ever used.",
-                  rating: 5
-                },
-                {
-                  name: "Lisa Park",
-                  role: "Freelance Writer",
-                  company: "Self-employed",
-                  avatar: "LP",
-                  color: "from-purple-400 to-violet-500",
-                  text: "As a freelancer, I juggle multiple clients daily. Flowdo's clean interface helps me stay sane. No clutter, no distractions — just pure focus.",
-                  rating: 5
-                },
-                {
-                  name: "David Kumar",
-                  role: "Project Manager",
-                  company: "Microsoft",
-                  avatar: "DK",
-                  color: "from-cyan-400 to-blue-500",
-                  text: "I recommend Flowdo to my entire team. The weekly review feature is perfect for our retrospectives. Simple yet powerful — that's rare.",
-                  rating: 5
-                },
-                {
-                  name: "Anna Williams",
-                  role: "CEO",
-                  company: "StartupHub",
-                  avatar: "AW",
-                  color: "from-rose-400 to-pink-500",
-                  text: "Finally, a task manager that doesn't overwhelm me with features. Flowdo keeps things simple and that's exactly what busy executives need.",
-                  rating: 5
-                },
-                {
-                  name: "Robert Chen",
-                  role: "Data Scientist",
-                  company: "Netflix",
-                  avatar: "RC",
-                  color: "from-indigo-400 to-purple-500",
-                  text: "The morning brain dump changed my life. I start each day with clarity instead of chaos. Highly recommend to anyone feeling overwhelmed.",
-                  rating: 5
-                },
-                {
-                  name: "Maria Garcia",
-                  role: "Creative Director",
-                  company: "Adobe",
-                  avatar: "MG",
-                  color: "from-amber-400 to-orange-500",
-                  text: "Beautiful design meets perfect functionality. Flowdo understands that good UX means getting out of your way. It's become essential to my workflow.",
-                  rating: 5
-                },
-              ].map((testimonial, i) => (
-                <div key={i} className="flex-shrink-0 w-[380px] p-6 bg-white rounded-2xl border border-orange-100 hover:border-orange-300 shadow-xl shadow-orange-200/20 transition-all duration-300 group">
-                  {/* Quote Icon */}
-                  <div className="mb-4">
-                    <svg className="w-8 h-8 text-orange-500/20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                    </svg>
-                  </div>
-
-                  {/* Stars */}
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, j) => (
-                      <svg key={j} className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-
-                  {/* Quote */}
-                  <p className="text-gray-700 leading-relaxed mb-6 font-medium">&ldquo;{testimonial.text}&rdquo;</p>
-
-                  {/* Author */}
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white`}>
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{testimonial.name}</p>
-                      <p className="text-sm text-gray-500">{testimonial.role} at <span className="text-orange-500 font-medium">{testimonial.company}</span></p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Trust Badges */}
-        <div className="max-w-6xl mx-auto px-6 mt-16 text-center">
-          <p className="text-sm text-gray-400 mb-6">Trusted by teams at</p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-30">
+        {/* Trust Badges - Mini */}
+        <div className="max-w-4xl mx-auto px-6 mt-16 text-center">
+          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-34 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
             {["Google", "Microsoft", "Spotify", "Airbnb", "Stripe", "Notion"].map((company, i) => (
-              <span key={i} className="text-xl font-bold text-gray-400">{company}</span>
+              <span key={i} className="text-2xl font-black font-bold text-gray-700 tracking-tighter hover:text-orange-500 cursor-default transition-colors">
+                {company}
+              </span>
             ))}
           </div>
         </div>
@@ -806,15 +879,27 @@ export default function Home() {
           <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
             Join thousands of people who finally have their tasks under control.
           </p>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-3 px-10 py-5 text-orange-600 font-bold text-lg bg-white rounded-2xl shadow-xl shadow-orange-600/20 hover:shadow-2xl hover:-translate-y-1 transition-all"
-          >
-            Create Your Free Account
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-3 px-10 py-5 text-orange-600 font-bold text-lg bg-white rounded-2xl shadow-xl shadow-orange-600/20 hover:shadow-2xl hover:-translate-y-1 transition-all"
+            >
+              Create Your Free Account
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+            <div className="flex -space-x-4 mb-4 sm:mb-0">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="w-12 h-12 rounded-full border-4 border-orange-500 bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-600 overflow-hidden">
+                  <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="User" />
+                </div>
+              ))}
+              <div className="w-12 h-12 rounded-full border-4 border-orange-500 bg-white flex items-center justify-center text-[10px] font-bold text-orange-600">
+                +10k
+              </div>
+            </div>
+          </div>
           <p className="text-white/60 text-sm mt-6">No credit card required • Free forever</p>
         </div>
       </section>

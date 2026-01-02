@@ -31,12 +31,16 @@ interface TaskFormProps {
   mode?: "create" | "edit";
   task?: Task;
   onSuccess?: (task: Task) => void;
+  isModal?: boolean;
+  onCancel?: () => void;
 }
 
 export default function TaskForm({
   mode = "create",
   task,
   onSuccess,
+  isModal = false,
+  onCancel,
 }: TaskFormProps) {
   const router = useRouter();
 
@@ -136,44 +140,47 @@ export default function TaskForm({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 py-10 px-4 sm:px-6">
-      {/* Background Decorations */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-orange-200/30 to-rose-200/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 -left-32 w-80 h-80 bg-gradient-to-br from-teal-200/20 to-cyan-200/20 rounded-full blur-3xl" />
-      </div>
+    <div className={`relative ${isModal ? "" : "min-h-screen py-10"}`}>
+      {!isModal && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-orange-200/30 to-rose-200/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 -left-32 w-80 h-80 bg-gradient-to-br from-teal-200/20 to-cyan-200/20 rounded-full blur-3xl" />
+        </div>
+      )}
 
-      <div className="w-full max-w-2xl mx-auto relative">
-        {/* Back Button */}
-        <Link
-          href="/tasks"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium mb-8 group"
-        >
-          <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to tasks
-        </Link>
+      <div className={`w-full ${isModal ? "" : "max-w-2xl mx-auto"} relative`}>
+        {/* Back Button - Desktop only */}
+        {!isModal && (
+          <Link
+            href="/tasks"
+            className="hidden lg:inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium mb-8 group"
+          >
+            <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Dashboard
+          </Link>
+        )}
 
         {/* Card */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-gray-200/50 p-8 sm:p-10 border border-white/50">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-100 to-rose-100 flex items-center justify-center mb-5">
+        <div className={`${isModal ? "" : "bg-white/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl shadow-gray-200/50 p-5 sm:p-8 lg:p-10 border border-white/50"}`}>
+          {/* Header - Show even in edit mode if not modal */}
+          <div className="mb-4">
+            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-100 to-rose-100 flex items-center justify-center mb-3">
               {mode === "edit" ? (
-                <svg className="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-6 h-6 sm:w-6 sm:h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               ) : (
-                <svg className="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-6 h-6 sm:w-6 sm:h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
               )}
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
+            <h1 className="text-xl lg:text-2xl font-extrabold text-gray-900 mb-1">
               {mode === "edit" ? "Edit Task" : "Create New Task"}
             </h1>
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-sm">
               {mode === "edit"
                 ? "Update your task details below"
                 : "Add a new task to your list"}
@@ -194,7 +201,7 @@ export default function TaskForm({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-2">
             {/* Title field */}
             <div>
               <label
@@ -211,7 +218,7 @@ export default function TaskForm({
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={isLoading}
                 maxLength={200}
-                className={`w-full px-5 py-4 bg-gray-50/50 border-2 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all ${
+                className={`w-full px-4 sm:px-5 py-3 bg-gray-50/50 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all text-base ${
                   errors.title
                     ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                     : "border-gray-100"
@@ -232,7 +239,7 @@ export default function TaskForm({
                   <span />
                 )}
                 <p
-                  className={`text-sm font-medium ${
+                  className={`text-xs font-medium ${
                     titleCharsLeft < 20 ? "text-orange-500" : "text-gray-400"
                   }`}
                 >
@@ -257,8 +264,8 @@ export default function TaskForm({
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isLoading}
                 maxLength={1000}
-                rows={5}
-                className={`w-full px-5 py-4 bg-gray-50/50 border-2 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all resize-none ${
+                rows={4}
+                className={`w-full px-4 sm:px-5 py-3 bg-gray-50/50 border-2 rounded-xl sm:rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all resize-none text-base ${
                   errors.description
                     ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
                     : "border-gray-100"
@@ -277,7 +284,7 @@ export default function TaskForm({
                   <span />
                 )}
                 <p
-                  className={`text-sm font-medium ${
+                  className={`text-xs font-medium ${
                     descriptionCharsLeft < 100 ? "text-orange-500" : "text-gray-400"
                   }`}
                 >
@@ -287,11 +294,27 @@ export default function TaskForm({
             </div>
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-4">
+              {isModal ? (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="py-3 sm:py-4 px-6 sm:px-8 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold text-base sm:text-lg rounded-xl sm:rounded-2xl focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all text-center"
+                >
+                  Cancel
+                </button>
+              ) : (
+                <Link
+                  href="/tasks"
+                  className="py-3 sm:py-4 px-6 sm:px-8 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold text-base sm:text-lg rounded-xl sm:rounded-2xl focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all text-center"
+                >
+                  Cancel
+                </Link>
+              )}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 py-4 px-6 bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 text-white font-bold text-lg rounded-2xl shadow-lg shadow-orange-200/50 hover:shadow-xl hover:shadow-orange-300/50 focus:outline-none focus:ring-4 focus:ring-orange-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5 active:translate-y-0"
+                className="flex-1 py-3 sm:py-4 px-6 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-lg shadow-orange-200/50 hover:shadow-xl hover:shadow-orange-300/50 focus:outline-none focus:ring-4 focus:ring-orange-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5 active:translate-y-0"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-3">
@@ -322,12 +345,6 @@ export default function TaskForm({
                   "Create Task"
                 )}
               </button>
-              <Link
-                href="/tasks"
-                className="py-4 px-8 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold text-lg rounded-2xl focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all text-center"
-              >
-                Cancel
-              </Link>
             </div>
           </form>
         </div>

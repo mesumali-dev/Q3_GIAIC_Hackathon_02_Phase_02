@@ -112,3 +112,7 @@ app.include_router(auth_router)
 # Register task routes
 from src.api.tasks import router as tasks_router
 app.include_router(tasks_router)
+
+# Register reminder routes
+from src.api.reminder_router import router as reminder_router
+app.include_router(reminder_router)

@@ -13,8 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI-Native Todo App",
-  description: "A secure, multi-user todo application built with Next.js and FastAPI",
+  title: "Flowdo | Your thoughts, perfectly captured.",
+  description: "Stop forgetting important tasks. Flowdo turns your scattered ideas into organized action items that actually get done. Premium, minimal, and AI-powered.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  keywords: ["todo app", "productivity", "task manager", "flowdo", "ai todo", "focus", "daily planner"],
+  authors: [{ name: "Flowdo Team" }],
+  openGraph: {
+    title: "Flowdo — Your thoughts, perfectly captured.",
+    description: "The premium task manager for high-performers.",
+    url: "https://flowdo.io",
+    siteName: "Flowdo",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
