@@ -114,5 +114,5 @@ from src.api.tasks import router as tasks_router
 app.include_router(tasks_router)
 
 # Register reminder routes
-from src.api.reminder_router import router as reminder_router
-app.include_router(reminder_router)
+from src.api.reminders import router as reminders_router
+app.include_router(reminders_router)

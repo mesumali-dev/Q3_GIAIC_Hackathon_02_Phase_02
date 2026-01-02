@@ -17,6 +17,11 @@ import { verifyAuth, logout, Task, getTasks } from "@/lib/api";
 import TaskList from "@/components/tasks/TaskList";
 import TaskForm from "@/components/tasks/TaskForm";
 import { motion, AnimatePresence } from "framer-motion";
+import { reminderClient } from "@/lib/api/reminder_client";
+import NotificationModal from "@/components/reminders/NotificationModal";
+import NotificationBadge from "@/components/reminders/NotificationBadge";
+import NotificationDropdown from "@/components/reminders/NotificationDropdown";
+import { ReminderRead } from "@/types/reminder";
 
 // Sample notifications data
 const sampleNotifications = [
@@ -37,6 +42,10 @@ export default function TasksPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [taskStats, setTaskStats] = useState({ completed: 0, pending: 0, total: 0 });
+  const [dueReminders, setDueReminders] = useState<ReminderRead[]>([]);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderDropdownOpen, setReminderDropdownOpen] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState<ReminderRead | null>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -80,6 +89,33 @@ export default function TasksPage() {
     fetchStats();
   }, [user, refreshTrigger]);
 
+  // Fetch due reminders with polling
+  useEffect(() => {
+    const fetchDueReminders = async () => {
+      if (!user) return;
+      try {
+        const reminders = await reminderClient.getDueReminders(user.id);
+        const prevCount = dueReminders.length;
+        setDueReminders(reminders);
+
+        // Show modal if new reminders arrived
+        if (reminders.length > 0 && reminders.length > prevCount) {
+          setShowReminderModal(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch due reminders:", error);
+      }
+    };
+
+    // Initial fetch
+    fetchDueReminders();
+
+    // Poll every 30 seconds for new reminders
+    const pollInterval = setInterval(fetchDueReminders, 30000);
+
+    return () => clearInterval(pollInterval);
+  }, [user]);
+
   // Close sidebar on route change or escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -98,6 +134,16 @@ export default function TasksPage() {
 
   const markAsRead = (id: number) => {
     setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleReminderClick = (reminder: ReminderRead) => {
+    setSelectedReminder(reminder);
+    setShowReminderModal(true);
+    setReminderDropdownOpen(false);
+  };
+
+  const handleReminderDelete = (reminderId: number) => {
+    setDueReminders(dueReminders.filter(r => r.id !== reminderId));
   };
 
   const navItems = [
@@ -269,6 +315,21 @@ export default function TasksPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
+
+              {/* Reminder Notifications */}
+              <div className="relative">
+                <NotificationBadge
+                  count={dueReminders.length}
+                  onClick={() => setReminderDropdownOpen(!reminderDropdownOpen)}
+                />
+                <NotificationDropdown
+                  reminders={dueReminders}
+                  isOpen={reminderDropdownOpen}
+                  onClose={() => setReminderDropdownOpen(false)}
+                  onReminderClick={handleReminderClick}
+                  onDelete={handleReminderDelete}
+                />
+              </div>
 
               {/* Notifications */}
               <div className="relative">
@@ -709,6 +770,16 @@ export default function TasksPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Reminder Notification Modal */}
+      <NotificationModal
+        reminders={selectedReminder ? [selectedReminder] : dueReminders}
+        isOpen={showReminderModal}
+        onClose={() => {
+          setShowReminderModal(false);
+          setSelectedReminder(null);
+        }}
+      />
     </div>
   );
 }
