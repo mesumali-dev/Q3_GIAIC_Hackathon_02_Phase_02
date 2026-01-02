@@ -17,6 +17,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Task, toggleTaskComplete, deleteTask } from "@/lib/api";
 import { getUser } from "@/lib/auth-helper";
+import { reminderClient } from "@/lib/api/reminder_client";
 
 interface TaskCardProps {
   task: Task;
@@ -29,6 +30,12 @@ export default function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardP
   const [isToggling, setIsToggling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderLoading, setReminderLoading] = useState(false);
+  const [remindAt, setRemindAt] = useState("");
+  const [repeatInterval, setRepeatInterval] = useState("");
+  const [repeatCount, setRepeatCount] = useState("");
+  const [reminderError, setReminderError] = useState("");
 
   /**
    * Format date for display
@@ -80,6 +87,54 @@ export default function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardP
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  /**
+   * Handle create reminder
+   */
+  const handleCreateReminder = async () => {
+    const user = getUser();
+    if (!user) return;
+
+    setReminderError("");
+
+    // Validate
+    if (!remindAt) {
+      setReminderError("Please select a date and time");
+      return;
+    }
+
+    const reminderDate = new Date(remindAt);
+    if (reminderDate <= new Date()) {
+      setReminderError("Reminder must be in the future");
+      return;
+    }
+
+    if ((repeatInterval && !repeatCount) || (!repeatInterval && repeatCount)) {
+      setReminderError("Both repeat interval and count are required together");
+      return;
+    }
+
+    setReminderLoading(true);
+    try {
+      await reminderClient.createReminder({
+        user_id: user.id,
+        task_id: task.id,
+        remind_at: reminderDate.toISOString(),
+        repeat_interval_minutes: repeatInterval ? parseInt(repeatInterval) : undefined,
+        repeat_count: repeatCount ? parseInt(repeatCount) : 0,
+      });
+
+      // Reset and close
+      setRemindAt("");
+      setRepeatInterval("");
+      setRepeatCount("");
+      setShowReminderModal(false);
+    } catch (error) {
+      setReminderError(error instanceof Error ? error.message : "Failed to create reminder");
+    } finally {
+      setReminderLoading(false);
     }
   };
 
@@ -158,6 +213,27 @@ export default function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardP
 
         {/* Actions */}
         <div className="flex-shrink-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Reminder button */}
+          <button
+            onClick={() => setShowReminderModal(true)}
+            className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+            aria-label="Set reminder"
+            title="Set reminder"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
+            </svg>
+          </button>
           {onEdit ? (
             <button
               onClick={() => onEdit(task)}
@@ -259,6 +335,122 @@ export default function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardP
                   </span>
                 ) : (
                   "Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reminder modal */}
+      {showReminderModal && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Set Reminder</h3>
+                <p className="text-sm text-gray-500 truncate max-w-[250px]">{task.title}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Remind At */}
+              <div>
+                <label htmlFor="card_remind_at" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Remind me at *
+                </label>
+                <input
+                  type="datetime-local"
+                  id="card_remind_at"
+                  value={remindAt}
+                  onChange={(e) => setRemindAt(e.target.value)}
+                  disabled={reminderLoading}
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl text-gray-900 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all"
+                />
+              </div>
+
+              {/* Repeat Options */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="card_repeat_interval" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Repeat every (min)
+                  </label>
+                  <input
+                    type="number"
+                    id="card_repeat_interval"
+                    value={repeatInterval}
+                    onChange={(e) => setRepeatInterval(e.target.value)}
+                    placeholder="e.g., 30"
+                    min="1"
+                    max="1440"
+                    disabled={reminderLoading}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl text-gray-900 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="card_repeat_count" className="block text-sm font-semibold text-gray-700 mb-2">
+                    Times to repeat
+                  </label>
+                  <input
+                    type="number"
+                    id="card_repeat_count"
+                    value={repeatCount}
+                    onChange={(e) => setRepeatCount(e.target.value)}
+                    placeholder="e.g., 3"
+                    min="1"
+                    max="100"
+                    disabled={reminderLoading}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl text-gray-900 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                Leave repeat fields empty for a one-time reminder
+              </p>
+
+              {/* Error */}
+              {reminderError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl">
+                  <p className="text-sm text-rose-600">{reminderError}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowReminderModal(false);
+                  setReminderError("");
+                  setRemindAt("");
+                  setRepeatInterval("");
+                  setRepeatCount("");
+                }}
+                disabled={reminderLoading}
+                className="flex-1 px-5 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateReminder}
+                disabled={reminderLoading}
+                className="flex-1 px-5 py-3 text-white bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-semibold rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-blue-200/50"
+              >
+                {reminderLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Creating...
+                  </span>
+                ) : (
+                  "Set Reminder"
                 )}
               </button>
             </div>

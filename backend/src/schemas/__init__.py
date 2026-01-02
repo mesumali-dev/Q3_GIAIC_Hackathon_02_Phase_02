@@ -11,6 +11,12 @@ from src.schemas.auth import (
     RegisterRequest,
     UserResponse,
 )
+from src.schemas.reminder import (
+    ReminderCreate,
+    ReminderListResponse,
+    ReminderRead,
+    ReminderWithTask,
+)
 from src.schemas.task import (
     TaskCreate,
     TaskListResponse,
@@ -28,4 +34,8 @@ __all__ = [
     "TaskUpdate",
     "TaskResponse",
     "TaskListResponse",
+    "ReminderCreate",
+    "ReminderRead",
+    "ReminderWithTask",
+    "ReminderListResponse",
 ]

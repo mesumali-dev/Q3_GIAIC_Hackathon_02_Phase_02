@@ -20,10 +20,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createTask, updateTask, Task } from "@/lib/api";
 import { getUser } from "@/lib/auth-helper";
+import { reminderClient } from "@/lib/api/reminder_client";
 
 interface FormErrors {
   title?: string;
   description?: string;
+  remind_at?: string;
+  repeat_interval?: string;
+  repeat_count?: string;
   general?: string;
 }
 
@@ -47,6 +51,12 @@ export default function TaskForm({
   // Form state
   const [title, setTitle] = useState(task?.title || "");
   const [description, setDescription] = useState(task?.description || "");
+
+  // Reminder state
+  const [showReminder, setShowReminder] = useState(false);
+  const [remindAt, setRemindAt] = useState("");
+  const [repeatInterval, setRepeatInterval] = useState("");
+  const [repeatCount, setRepeatCount] = useState("");
 
   // UI state
   const [isLoading, setIsLoading] = useState(false);
@@ -73,6 +83,35 @@ export default function TaskForm({
     // Description validation (optional, max 1000 chars)
     if (description.length > 1000) {
       newErrors.description = "Description must be 1000 characters or less";
+    }
+
+    // Reminder validation (only if enabled)
+    if (showReminder) {
+      if (!remindAt) {
+        newErrors.remind_at = "Reminder date/time is required";
+      } else {
+        const reminderDate = new Date(remindAt);
+        if (reminderDate <= new Date()) {
+          newErrors.remind_at = "Reminder must be in the future";
+        }
+      }
+
+      // Repeat validation
+      if (repeatInterval && parseInt(repeatInterval) <= 0) {
+        newErrors.repeat_interval = "Interval must be positive";
+      }
+      if (repeatInterval && parseInt(repeatInterval) > 1440) {
+        newErrors.repeat_interval = "Max 24 hours (1440 min)";
+      }
+      if (repeatCount && parseInt(repeatCount) <= 0) {
+        newErrors.repeat_count = "Count must be positive";
+      }
+      if (repeatCount && parseInt(repeatCount) > 100) {
+        newErrors.repeat_count = "Max 100 repeats";
+      }
+      if ((repeatInterval && !repeatCount) || (!repeatInterval && repeatCount)) {
+        newErrors.general = "Both repeat interval and count must be provided together";
+      }
     }
 
     setErrors(newErrors);
@@ -118,6 +157,22 @@ export default function TaskForm({
       if (result.error) {
         setErrors({ general: result.error });
         return;
+      }
+
+      // Create reminder if enabled (only for new tasks)
+      if (mode === "create" && showReminder && remindAt && result.data) {
+        try {
+          await reminderClient.createReminder({
+            user_id: user.id,
+            task_id: result.data.id,
+            remind_at: new Date(remindAt).toISOString(),
+            repeat_interval_minutes: repeatInterval ? parseInt(repeatInterval) : undefined,
+            repeat_count: repeatCount ? parseInt(repeatCount) : 0,
+          });
+        } catch (reminderError) {
+          console.error("Failed to create reminder:", reminderError);
+          // Task was created successfully, just log reminder error
+        }
       }
 
       // Success callback or redirect
@@ -292,6 +347,119 @@ export default function TaskForm({
                 </p>
               </div>
             </div>
+
+            {/* Reminder Section - Only for create mode */}
+            {mode === "create" && (
+              <div className="border-t border-gray-100 pt-4 mt-2">
+                {/* Reminder Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowReminder(!showReminder)}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
+                    showReminder
+                      ? "bg-orange-50 border-2 border-orange-200"
+                      : "bg-gray-50 border-2 border-transparent hover:border-gray-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      showReminder ? "bg-orange-100" : "bg-gray-100"
+                    }`}>
+                      <svg className={`w-5 h-5 ${showReminder ? "text-orange-600" : "text-gray-500"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <p className={`font-semibold ${showReminder ? "text-orange-700" : "text-gray-700"}`}>
+                        Set Reminder
+                      </p>
+                      <p className="text-xs text-gray-500">Get notified about this task</p>
+                    </div>
+                  </div>
+                  <div className={`w-11 h-6 rounded-full p-1 transition-colors ${
+                    showReminder ? "bg-orange-500" : "bg-gray-300"
+                  }`}>
+                    <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                      showReminder ? "translate-x-5" : "translate-x-0"
+                    }`} />
+                  </div>
+                </button>
+
+                {/* Reminder Fields */}
+                {showReminder && (
+                  <div className="mt-4 space-y-4 p-4 bg-orange-50/50 rounded-xl border border-orange-100">
+                    {/* Remind At */}
+                    <div>
+                      <label htmlFor="remind_at" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Remind me at <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="datetime-local"
+                        id="remind_at"
+                        value={remindAt}
+                        onChange={(e) => setRemindAt(e.target.value)}
+                        disabled={isLoading}
+                        className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all ${
+                          errors.remind_at ? "border-rose-300" : "border-gray-100"
+                        }`}
+                      />
+                      {errors.remind_at && (
+                        <p className="mt-1 text-sm text-rose-500">{errors.remind_at}</p>
+                      )}
+                    </div>
+
+                    {/* Repeat Options */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="repeat_interval" className="block text-sm font-semibold text-gray-700 mb-2">
+                          Repeat every (min)
+                        </label>
+                        <input
+                          type="number"
+                          id="repeat_interval"
+                          value={repeatInterval}
+                          onChange={(e) => setRepeatInterval(e.target.value)}
+                          placeholder="e.g., 30"
+                          min="1"
+                          max="1440"
+                          disabled={isLoading}
+                          className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all ${
+                            errors.repeat_interval ? "border-rose-300" : "border-gray-100"
+                          }`}
+                        />
+                        {errors.repeat_interval && (
+                          <p className="mt-1 text-xs text-rose-500">{errors.repeat_interval}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label htmlFor="repeat_count" className="block text-sm font-semibold text-gray-700 mb-2">
+                          Times to repeat
+                        </label>
+                        <input
+                          type="number"
+                          id="repeat_count"
+                          value={repeatCount}
+                          onChange={(e) => setRepeatCount(e.target.value)}
+                          placeholder="e.g., 3"
+                          min="1"
+                          max="100"
+                          disabled={isLoading}
+                          className={`w-full px-4 py-3 bg-white border-2 rounded-xl text-gray-900 focus:outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100 transition-all ${
+                            errors.repeat_count ? "border-rose-300" : "border-gray-100"
+                          }`}
+                        />
+                        {errors.repeat_count && (
+                          <p className="mt-1 text-xs text-rose-500">{errors.repeat_count}</p>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Leave repeat fields empty for a one-time reminder
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Action buttons */}
             <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-4">
