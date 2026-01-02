@@ -18,7 +18,11 @@ import { Task, getTasks } from "@/lib/api";
 import { getUser } from "@/lib/auth-helper";
 import TaskCard from "./TaskCard";
 
-export default function TaskList() {
+interface TaskListProps {
+  onEdit?: (task: Task) => void;
+}
+
+export default function TaskList({ onEdit }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -205,6 +209,7 @@ export default function TaskList() {
             task={task}
             onUpdate={handleUpdate}
             onDelete={handleDelete}
+            onEdit={onEdit}
           />
         ))}
       </div>
