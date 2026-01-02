@@ -47,6 +47,8 @@ export default function NotificationDropdown({
       onDelete(reminderId);
     } catch (error) {
       console.error("Failed to delete reminder:", error);
+      // Show user-friendly error message
+      alert("Failed to delete reminder. Please try again.");
     }
   };
 

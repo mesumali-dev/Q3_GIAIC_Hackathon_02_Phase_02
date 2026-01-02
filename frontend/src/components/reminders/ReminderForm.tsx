@@ -27,20 +27,22 @@ interface FormErrors {
 }
 
 interface ReminderFormProps {
-  taskId: string;
+  taskId?: string; // Optional for edit mode
+  reminder?: any; // For edit mode - can be ReminderRead or ReminderWithTask
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
 export default function ReminderForm({
   taskId,
+  reminder,
   onSuccess,
   onCancel,
 }: ReminderFormProps) {
-  // Form state
-  const [remindAt, setRemindAt] = useState("");
-  const [repeatIntervalMinutes, setRepeatIntervalMinutes] = useState("");
-  const [repeatCount, setRepeatCount] = useState("");
+  // Form state - initialize with reminder data if in edit mode
+  const [remindAt, setRemindAt] = useState(reminder ? reminder.remind_at.split('.')[0].slice(0, 16) : "");
+  const [repeatIntervalMinutes, setRepeatIntervalMinutes] = useState(reminder ? (reminder.repeat_interval_minutes || "").toString() : "");
+  const [repeatCount, setRepeatCount] = useState(reminder ? (reminder.repeat_count || "").toString() : "");
 
   // UI state
   const [isLoading, setIsLoading] = useState(false);
@@ -113,26 +115,44 @@ export default function ReminderForm({
     setIsLoading(true);
 
     try {
-      await reminderClient.createReminder({
-        user_id: user.id,
-        task_id: taskId,
-        remind_at: new Date(remindAt).toISOString(),
-        repeat_interval_minutes: repeatIntervalMinutes ? parseInt(repeatIntervalMinutes) : undefined,
-        repeat_count: repeatCount ? parseInt(repeatCount) : 0,
-      });
+      if (reminder) {
+        // Update existing reminder
+        await reminderClient.updateReminder(reminder.id.toString(), user.id, {
+          task_id: taskId || reminder.task_id,
+          remind_at: new Date(remindAt).toISOString(),
+          repeat_interval_minutes: repeatIntervalMinutes ? parseInt(repeatIntervalMinutes) : undefined,
+          repeat_count: repeatCount ? parseInt(repeatCount) : undefined,
+        });
+      } else {
+        // Create new reminder
+        if (!taskId) {
+          setErrors({ general: "Task ID is required for creating a new reminder" });
+          return;
+        }
+
+        await reminderClient.createReminder({
+          user_id: user.id,
+          task_id: taskId,
+          remind_at: new Date(remindAt).toISOString(),
+          repeat_interval_minutes: repeatIntervalMinutes ? parseInt(repeatIntervalMinutes) : undefined,
+          repeat_count: repeatCount ? parseInt(repeatCount) : 0,
+        });
+      }
 
       // Success - call callback
       if (onSuccess) {
         onSuccess();
       }
 
-      // Reset form
-      setRemindAt("");
-      setRepeatIntervalMinutes("");
-      setRepeatCount("");
+      // Reset form if creating new reminder
+      if (!reminder) {
+        setRemindAt("");
+        setRepeatIntervalMinutes("");
+        setRepeatCount("");
+      }
     } catch (error) {
       setErrors({
-        general: error instanceof Error ? error.message : "Failed to create reminder",
+        general: error instanceof Error ? error.message : "Failed to save reminder",
       });
     } finally {
       setIsLoading(false);
@@ -232,7 +252,7 @@ export default function ReminderForm({
           disabled={isLoading}
           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
-          {isLoading ? "Creating..." : "Create Reminder"}
+          {isLoading ? (reminder ? "Updating..." : "Creating...") : (reminder ? "Update Reminder" : "Create Reminder")}
         </button>
       </div>
     </form>

@@ -21,35 +21,29 @@ import { reminderClient } from "@/lib/api/reminder_client";
 import NotificationModal from "@/components/reminders/NotificationModal";
 import NotificationBadge from "@/components/reminders/NotificationBadge";
 import NotificationDropdown from "@/components/reminders/NotificationDropdown";
+import ReminderManager from "@/components/reminders/ReminderManager";
 import { ReminderRead } from "@/types/reminder";
 
-// Sample notifications data
-const sampleNotifications = [
-  { id: 1, title: "Task Due Soon", message: "Complete project proposal in 2 hours", time: "2h", type: "warning", read: false },
-  { id: 2, title: "Task Completed", message: "You completed 'Review designs'", time: "5h", type: "success", read: false },
-  { id: 3, title: "New Feature", message: "AI suggestions are now available!", time: "1d", type: "info", read: true },
-];
 
 export default function TasksPage() {
   const router = useRouter();
   const [user, setUser] = useState<StoredUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(sampleNotifications);
   const [activeNav, setActiveNav] = useState("Dashboard");
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [taskStats, setTaskStats] = useState({ completed: 0, pending: 0, total: 0 });
   const [dueReminders, setDueReminders] = useState<ReminderRead[]>([]);
+  const [allReminders, setAllReminders] = useState<ReminderRead[]>([]);
   const [showReminderModal, setShowReminderModal] = useState(false);
+  const [showReminderManager, setShowReminderManager] = useState(false);
   const [reminderDropdownOpen, setReminderDropdownOpen] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState<ReminderRead | null>(null);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Check authentication on mount
+  // Check authentication on mount and fetch reminders
   useEffect(() => {
     const checkAuth = async () => {
       if (!isAuthenticated()) {
@@ -66,10 +60,44 @@ export default function TasksPage() {
 
       setUser(getStoredUser());
       setIsLoading(false);
+
+      // Fetch reminders after user is authenticated
+      if (getStoredUser()) {
+        fetchDueReminders();
+      }
     };
 
     checkAuth();
   }, [router]);
+
+  // Function to fetch due reminders
+  const fetchDueReminders = async () => {
+    if (!user) return;
+    try {
+      const reminders = await reminderClient.getDueReminders(user.id);
+      setDueReminders(reminders);
+
+      // Show modal if there are any due reminders
+      if (reminders.length > 0) {
+        setShowReminderModal(true);
+      }
+    } catch (error) {
+      console.error("Failed to fetch due reminders:", error);
+    }
+  };
+
+  // Function to fetch all reminders for badge count
+  const fetchAllReminders = async () => {
+    if (!user) return;
+    try {
+      const reminders = await reminderClient.getAllUserReminders(user.id);
+      // Filter to get only active reminders for the badge count
+      const activeReminders = reminders.filter((r: any) => r.is_active);
+      setAllReminders(activeReminders);
+    } catch (error) {
+      console.error("Failed to fetch all reminders:", error);
+    }
+  };
 
   // Fetch task stats for counts
   useEffect(() => {
@@ -89,31 +117,21 @@ export default function TasksPage() {
     fetchStats();
   }, [user, refreshTrigger]);
 
-  // Fetch due reminders with polling
+
+  // Periodically fetch all reminders to keep badge count updated and due reminders to show modal automatically
   useEffect(() => {
-    const fetchDueReminders = async () => {
-      if (!user) return;
-      try {
-        const reminders = await reminderClient.getDueReminders(user.id);
-        const prevCount = dueReminders.length;
-        setDueReminders(reminders);
+    if (!user) return;
 
-        // Show modal if new reminders arrived
-        if (reminders.length > 0 && reminders.length > prevCount) {
-          setShowReminderModal(true);
-        }
-      } catch (error) {
-        console.error("Failed to fetch due reminders:", error);
-      }
-    };
+    const interval = setInterval(() => {
+      fetchAllReminders();
+      fetchDueReminders(); // Also check for due reminders to show modal automatically
+    }, 30000); // Fetch every 30 seconds
 
-    // Initial fetch
-    fetchDueReminders();
+    // Initial fetch after component mounts
+    fetchAllReminders();
+    fetchDueReminders(); // Also fetch due reminders to show modal if any are due
 
-    // Poll every 30 seconds for new reminders
-    const pollInterval = setInterval(fetchDueReminders, 30000);
-
-    return () => clearInterval(pollInterval);
+    return () => clearInterval(interval);
   }, [user]);
 
   // Close sidebar on route change or escape key
@@ -121,20 +139,13 @@ export default function TasksPage() {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setSidebarOpen(false);
-        setNotificationsOpen(false);
+        setReminderDropdownOpen(false);
       }
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, []);
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-  };
-
-  const markAsRead = (id: number) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
-  };
 
   const handleReminderClick = (reminder: ReminderRead) => {
     setSelectedReminder(reminder);
@@ -319,8 +330,10 @@ export default function TasksPage() {
               {/* Reminder Notifications */}
               <div className="relative">
                 <NotificationBadge
-                  count={dueReminders.length}
-                  onClick={() => setReminderDropdownOpen(!reminderDropdownOpen)}
+                  count={allReminders.length}
+                  onClick={() => {
+                    setReminderDropdownOpen(!reminderDropdownOpen);
+                  }}
                 />
                 <NotificationDropdown
                   reminders={dueReminders}
@@ -331,122 +344,16 @@ export default function TasksPage() {
                 />
               </div>
 
-              {/* Notifications */}
-              <div className="relative">
-                <button
-                  onClick={() => setNotificationsOpen(!notificationsOpen)}
-                  className="relative p-2 rounded-xl hover:bg-orange-50 transition-colors"
-                >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center animate-pulse">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {/* Notifications Dropdown */}
-                <AnimatePresence>
-                  {notificationsOpen && (
-                    <>
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setNotificationsOpen(false)}
-                        className="fixed inset-0 z-40"
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                        className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden z-50"
-                      >
-                        {/* Header */}
-                        <div className="px-5 py-4 bg-linear-to-r from-orange-50 to-amber-50 border-b border-orange-100 flex items-center justify-between">
-                          <div>
-                            <h3 className="text-sm font-black text-gray-900">Notifications</h3>
-                            <p className="text-[10px] text-gray-500 font-medium">{unreadCount} unread messages</p>
-                          </div>
-                          {unreadCount > 0 && (
-                            <button
-                              onClick={markAllAsRead}
-                              className="text-xs font-bold text-orange-600 hover:text-orange-700"
-                            >
-                              Mark all read
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Notifications List */}
-                        <div className="max-h-80 overflow-y-auto">
-                          {notifications.length === 0 ? (
-                            <div className="px-5 py-10 text-center">
-                              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                </svg>
-                              </div>
-                              <p className="text-sm text-gray-500 font-medium">No notifications yet</p>
-                            </div>
-                          ) : (
-                            notifications.map((notification) => (
-                              <button
-                                key={notification.id}
-                                onClick={() => markAsRead(notification.id)}
-                                className={`w-full px-5 py-4 flex gap-3 hover:bg-gray-50 transition-colors text-left ${
-                                  !notification.read ? "bg-orange-50/50" : ""
-                                }`}
-                              >
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                                  notification.type === "warning" ? "bg-amber-100" :
-                                  notification.type === "success" ? "bg-green-100" : "bg-blue-100"
-                                }`}>
-                                  {notification.type === "warning" && (
-                                    <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                  )}
-                                  {notification.type === "success" && (
-                                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                  )}
-                                  {notification.type === "info" && (
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-bold text-gray-900 truncate">{notification.title}</p>
-                                    <span className="text-[10px] text-gray-400 font-medium shrink-0">{notification.time}</span>
-                                  </div>
-                                  <p className="text-xs text-gray-500 mt-0.5 truncate">{notification.message}</p>
-                                </div>
-                                {!notification.read && (
-                                  <div className="w-2 h-2 rounded-full bg-orange-500 shrink-0 mt-2" />
-                                )}
-                              </button>
-                            ))
-                          )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
-                          <button className="w-full text-center text-xs font-bold text-orange-600 hover:text-orange-700">
-                            View all notifications
-                          </button>
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
+              {/* All Reminders Button */}
+              <button
+                onClick={() => setShowReminderManager(true)}
+                className="relative p-2 rounded-xl hover:bg-orange-50 transition-colors"
+                title="View all reminders"
+              >
+                <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
 
               {/* User Avatar - Mobile */}
               <div className="lg:hidden">
@@ -722,7 +629,7 @@ export default function TasksPage() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col"
             >
-              <div className="p-6 sm:p-8">
+              <div className="p-6 sm:p-8 overflow-x-auto">
                 <TaskForm
                   isModal={true}
                   onSuccess={() => {
@@ -754,7 +661,7 @@ export default function TasksPage() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col"
             >
-              <div className="p-6 sm:p-8">
+              <div className="p-6 sm:p-8 overflow-x-auto">
                 <TaskForm
                   mode="edit"
                   task={editingTask}
@@ -779,6 +686,12 @@ export default function TasksPage() {
           setShowReminderModal(false);
           setSelectedReminder(null);
         }}
+      />
+
+      {/* Reminder Manager Modal */}
+      <ReminderManager
+        isOpen={showReminderManager}
+        onClose={() => setShowReminderManager(false)}
       />
     </div>
   );
