@@ -14,7 +14,7 @@ const testimonials = [
     company: "Spotify",
     avatar: "SM",
     color: "from-pink-400 to-rose-500",
-    text: "Flowdo completely changed how I manage daily projects. Simple, fast, and exactly what I needed to stay focused.",
+    text: "Flowdos completely changed how I manage daily projects. Simple, fast, and exactly what I needed to stay focused.",
     rating: 5
   },
   {
@@ -32,7 +32,7 @@ const testimonials = [
     company: "YouTube",
     avatar: "DP",
     color: "from-violet-400 to-purple-500",
-    text: "As a creator, my mind is always racing. Flowdo is the bucket that catches all my ideas before they disappear.",
+    text: "As a creator, my mind is always racing. Flowdos is the bucket that catches all my ideas before they disappear.",
     rating: 5
   },
   {
@@ -59,7 +59,7 @@ const testimonials = [
     company: "Stanford",
     avatar: "SB",
     color: "from-fuchsia-400 to-pink-500",
-    text: "Finally, a way to balance my research, classes, and personal life without losing my mind. Thank you, Flowdo!",
+    text: "Finally, a way to balance my research, classes, and personal life without losing my mind. Thank you, Flowdos!",
     rating: 5
   }
 ];
@@ -180,7 +180,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-gray-800">Flowdo</span>
+            <span className="text-xl font-bold text-gray-800">Flowdos</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -233,7 +233,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              Stop forgetting important tasks. Flowdo turns your scattered ideas into organized action items that actually get done.
+              Stop forgetting important tasks. Flowdos turns your scattered ideas into organized action items that actually get done.
             </p>
           </div>
 
@@ -270,7 +270,7 @@ export default function Home() {
                 </div>
                 <div className="flex-1 flex justify-center">
                   <div className="px-4 py-1.5 bg-white rounded-lg text-xs text-gray-400 border border-gray-100">
-                    app.flowdo.io
+                    app.flowdos.io
                   </div>
                 </div>
               </div>
@@ -917,7 +917,7 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="text-xl font-bold">Flowdo</span>
+                <span className="text-xl font-bold">Flowdos</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 The simple task manager that helps you focus on what matters most.
@@ -960,7 +960,7 @@ export default function Home() {
 
           {/* Footer Bottom */}
           <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500">© 2025 Flowdo. All rights reserved.</p>
+            <p className="text-sm text-gray-500">© 2025 Flowdos. All rights reserved.</p>
 
             {/* Social Links */}
             <div className="flex items-center gap-4">

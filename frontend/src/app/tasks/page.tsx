@@ -205,7 +205,7 @@ export default function TasksPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <span className="text-xl font-black text-gray-800 tracking-tight">Flowdo</span>
+            <span className="text-xl font-black text-gray-800 tracking-tight">Flowdos</span>
           </Link>
 
           {/* Close button - Mobile only */}
@@ -443,7 +443,7 @@ export default function TasksPage() {
                       </svg>
                     </div>
                     <h3 className="font-black text-gray-900 mb-1">Finish Project</h3>
-                    <p className="text-sm text-gray-500 mb-4">Complete the final touches on the Flowdo dashboard.</p>
+                    <p className="text-sm text-gray-500 mb-4">Complete the final touches on the Flowdos dashboard.</p>
                     <span className="px-3 py-1 bg-orange-100 text-orange-600 text-[10px] font-black rounded-full uppercase tracking-wider">High Priority</span>
                   </div>
                   <div className="p-6 bg-white rounded-3xl border border-blue-50 shadow-sm hover:shadow-md transition-shadow">

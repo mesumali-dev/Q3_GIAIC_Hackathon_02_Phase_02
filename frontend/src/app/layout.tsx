@@ -13,20 +13,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Flowdo | Your thoughts, perfectly captured.",
-  description: "Stop forgetting important tasks. Flowdo turns your scattered ideas into organized action items that actually get done. Premium, minimal, and AI-powered.",
+  title: "Flowdos | Your thoughts, perfectly captured.",
+  description: "Stop forgetting important tasks. Flowdos turns your scattered ideas into organized action items that actually get done. Premium, minimal, and AI-powered.",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }, { url: "/logo.svg", type: "image/svg+xml" }],
     shortcut: "/logo.svg",
     apple: "/logo.svg",
   },
-  keywords: ["todo app", "productivity", "task manager", "flowdo", "ai todo", "focus", "daily planner"],
-  authors: [{ name: "Flowdo Team" }],
+  keywords: ["todo app", "productivity", "task manager", "flowdos", "ai todo", "focus", "daily planner"],
+  authors: [{ name: "Flowdos Team" }],
   openGraph: {
-    title: "Flowdo — Your thoughts, perfectly captured.",
+    title: "Flowdos — Your thoughts, perfectly captured.",
     description: "The premium task manager for high-performers.",
-    url: "https://flowdo.io",
-    siteName: "Flowdo",
+    url: "https://flowdos.io",
+    siteName: "Flowdos",
     locale: "en_US",
     type: "website",
   },
