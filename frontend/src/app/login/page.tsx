@@ -11,7 +11,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Sign In | Flowdo",
+  title: "Sign In | Flowdos",
   description: "Sign in to your account to manage your tasks",
 };
 
@@ -32,7 +32,7 @@ export default function LoginPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <span className="text-xl font-bold text-gray-800">Flowdo</span>
+        <span className="text-xl font-bold text-gray-800">Flowdos</span>
       </Link>
 
       <div className="w-full max-w-md relative z-10">

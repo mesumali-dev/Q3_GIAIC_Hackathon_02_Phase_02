@@ -11,7 +11,7 @@ import RegisterForm from "@/components/auth/RegisterForm";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Create Account | Flowdo",
+  title: "Create Account | Flowdos",
   description: "Create a new account to start managing your tasks",
 };
 
@@ -32,7 +32,7 @@ export default function RegisterPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <span className="text-xl font-bold text-gray-800">Flowdo</span>
+        <span className="text-xl font-bold text-gray-800">Flowdos</span>
       </Link>
 
       <div className="w-full max-w-md relative z-10">

@@ -204,7 +204,7 @@ export default function LoginForm() {
 
       <div className="mt-10 pt-8 border-t border-orange-100 text-center">
         <p className="text-gray-500 text-sm font-medium">
-          New to Flowdo?{" "}
+          New to Flowdos?{" "}
           <Link href="/register" className="text-orange-600 font-black hover:text-orange-700 transition-colors">
             Create account
           </Link>
