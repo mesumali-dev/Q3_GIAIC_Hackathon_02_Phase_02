@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   title: "Flowdo | Your thoughts, perfectly captured.",
   description: "Stop forgetting important tasks. Flowdo turns your scattered ideas into organized action items that actually get done. Premium, minimal, and AI-powered.",
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }, { url: "/logo.svg", type: "image/svg+xml" }],
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
   keywords: ["todo app", "productivity", "task manager", "flowdo", "ai todo", "focus", "daily planner"],
   authors: [{ name: "Flowdo Team" }],
