@@ -167,7 +167,7 @@ export default function TaskForm({
             task_id: result.data.id,
             remind_at: new Date(remindAt).toISOString(),
             repeat_interval_minutes: repeatInterval ? parseInt(repeatInterval) : undefined,
-            repeat_count: repeatCount ? parseInt(repeatCount) : 0,
+            repeat_count: repeatCount ? parseInt(repeatCount) : undefined,
           });
         } catch (reminderError) {
           console.error("Failed to create reminder:", reminderError);

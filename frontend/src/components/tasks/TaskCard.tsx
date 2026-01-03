@@ -123,7 +123,7 @@ export default function TaskCard({ task, onUpdate, onDelete, onEdit }: TaskCardP
         task_id: task.id,
         remind_at: reminderDate.toISOString(),
         repeat_interval_minutes: repeatInterval ? parseInt(repeatInterval) : undefined,
-        repeat_count: repeatCount ? parseInt(repeatCount) : 0,
+        repeat_count: repeatCount ? parseInt(repeatCount) : undefined,
       });
 
       // Reset and close

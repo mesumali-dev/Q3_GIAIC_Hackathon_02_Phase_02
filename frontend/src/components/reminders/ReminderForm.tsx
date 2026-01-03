@@ -118,6 +118,7 @@ export default function ReminderForm({
       if (reminder) {
         // Update existing reminder
         await reminderClient.updateReminder(reminder.id.toString(), user.id, {
+          user_id: user.id,
           task_id: taskId || reminder.task_id,
           remind_at: new Date(remindAt).toISOString(),
           repeat_interval_minutes: repeatIntervalMinutes ? parseInt(repeatIntervalMinutes) : undefined,
@@ -135,7 +136,7 @@ export default function ReminderForm({
           task_id: taskId,
           remind_at: new Date(remindAt).toISOString(),
           repeat_interval_minutes: repeatIntervalMinutes ? parseInt(repeatIntervalMinutes) : undefined,
-          repeat_count: repeatCount ? parseInt(repeatCount) : 0,
+          repeat_count: repeatCount ? parseInt(repeatCount) : undefined,
         });
       }
 
